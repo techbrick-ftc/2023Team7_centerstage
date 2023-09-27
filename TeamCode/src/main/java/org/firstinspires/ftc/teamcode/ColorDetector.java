@@ -13,8 +13,8 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.sql.Array;
 
-enum Location{
-    LEFT,CENTER,RIGHT
+enum Location {
+    LEFT, CENTER, RIGHT
 }
 
 
@@ -33,7 +33,7 @@ public class ColorDetector extends OpenCvPipeline {
     int[] rights;
 
 
-    public ColorDetector(Point[] points, int width, int height, boolean isRed){
+    public ColorDetector(Point[] points, int width, int height, boolean isRed) {
         point1 = points[0];
         point2 = points[1];
         point3 = points[2];
@@ -42,12 +42,14 @@ public class ColorDetector extends OpenCvPipeline {
         this.isRed = isRed;
 
     }
-    Rect findPoints(Point center){
-        Point topLeft = new Point(center.x-width*.5,center.y-height*.5);
-        Point bottomRight = new Point(center.x+width*.5,center.y+height*.5);
+
+    Rect findPoints(Point center) {
+        Point topLeft = new Point(center.x - width * .5, center.y - height * .5);
+        Point bottomRight = new Point(center.x + width * .5, center.y + height * .5);
         return (new Rect(topLeft, bottomRight));
     }
-     Mat inputToCMYK(Mat input) {
+
+    Mat inputToCMYK(Mat input) {
         Mat output = input;
         Imgproc.cvtColor(input, output, Imgproc.COLOR_BGR2RGB);
         return output;
@@ -69,24 +71,23 @@ public class ColorDetector extends OpenCvPipeline {
     }
 
 
-
     Location checkLocation(Mat left, Mat center, Mat right, int colorChannel) {
 
         lefts = matToRGB(left);
         Location finalLoc = Location.RIGHT;
         centers = matToRGB(center);
         rights = matToRGB(right);
-        int leftfinal = 2*lefts[colorChannel] - lefts[(colorChannel+1)%3] - lefts[(colorChannel+2)%3];
-        int centerfinal = 2*centers[colorChannel] - centers[(colorChannel+1)%3] - centers[(colorChannel+2)%3];
-        int rightfinal = 2*rights[colorChannel] - rights[(colorChannel+1)%3] - rights[(colorChannel+2)%3];
-        if (leftfinal > centerfinal && leftfinal > rightfinal){
+        int leftfinal = 2 * lefts[colorChannel] - lefts[(colorChannel + 1) % 3] - lefts[(colorChannel + 2) % 3];
+        int centerfinal = 2 * centers[colorChannel] - centers[(colorChannel + 1) % 3] - centers[(colorChannel + 2) % 3];
+        int rightfinal = 2 * rights[colorChannel] - rights[(colorChannel + 1) % 3] - rights[(colorChannel + 2) % 3];
+        if (leftfinal > centerfinal && leftfinal > rightfinal) {
             finalLoc = Location.LEFT;
-        }
-        else if(centerfinal > leftfinal && centerfinal > rightfinal) {
+        } else if (centerfinal > leftfinal && centerfinal > rightfinal) {
             finalLoc = Location.CENTER;
         }
         return finalLoc;
     }
+
     @Override
     public Mat processFrame(Mat input) {
         Rect rect1 = findPoints(point1);
@@ -95,13 +96,12 @@ public class ColorDetector extends OpenCvPipeline {
         Mat region1 = input.submat(rect1);
         Mat region2 = input.submat(rect2);
         Mat region3 = input.submat(rect3);
-        location = checkLocation(region1, region2,region3,isRed?0:2);
+        location = checkLocation(region1, region2, region3, isRed ? 0 : 2);
 
 
-
-        Imgproc.rectangle(input,rect1, new Scalar(0));
-        Imgproc.rectangle(input,rect2, new Scalar(0));
-        Imgproc.rectangle(input,rect3, new Scalar(0));
+        Imgproc.rectangle(input, rect1, new Scalar(0));
+        Imgproc.rectangle(input, rect2, new Scalar(0));
+        Imgproc.rectangle(input, rect3, new Scalar(0));
 
         return input;
     }
