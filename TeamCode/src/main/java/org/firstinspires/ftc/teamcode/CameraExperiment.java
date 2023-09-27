@@ -15,6 +15,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 public class CameraExperiment extends LinearOpMode {
     OpenCvCamera camera;
     FtcDashboard dashboard = FtcDashboard.getInstance();
+
     @Override
     public void runOpMode() throws InterruptedException {
         int pos1X = 124;
@@ -23,10 +24,10 @@ public class CameraExperiment extends LinearOpMode {
         int pos2Y = 262;
         int pos3X = 660;
         int pos3Y = 278;
-        Point[] points = {new Point(pos1X,pos1Y),new Point(pos2X,pos2Y),new Point(pos3X,pos3Y)};
+        Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
 
 
-        ColorDetector colorDetector = new ColorDetector(points,10,10,false);
+        ColorDetector colorDetector = new ColorDetector(points, 10, 10, false);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -45,23 +46,23 @@ public class CameraExperiment extends LinearOpMode {
         FtcDashboard.getInstance().startCameraStream(camera, 0);
 
         waitForStart();
-        while(opModeIsActive()){
+        while (opModeIsActive()) {
             TelemetryPacket packet = new TelemetryPacket();
             //packet.put("x", 3.7);
             packet.put("location", colorDetector.location);
-            for(int i = 0; i < colorDetector.lefts.length;i++) {
+            for (int i = 0; i < colorDetector.lefts.length; i++) {
                 packet.put(" leftRed " + i, colorDetector.lefts[i]);
 
             }
-                for(int i = 0; i < colorDetector.lefts.length;i++) {
-                    packet.put(" centerRed " + i, colorDetector.centers[i]);
+            for (int i = 0; i < colorDetector.lefts.length; i++) {
+                packet.put(" centerRed " + i, colorDetector.centers[i]);
 
-                }
-                    for(int i = 0; i < colorDetector.lefts.length;i++) {
-                        packet.put(" rightRed " + i, colorDetector.rights[i]);
+            }
+            for (int i = 0; i < colorDetector.lefts.length; i++) {
+                packet.put(" rightRed " + i, colorDetector.rights[i]);
 
-                    }
-                dashboard.sendTelemetryPacket(packet);
+            }
+            dashboard.sendTelemetryPacket(packet);
 
 
         }
