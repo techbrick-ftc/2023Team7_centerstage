@@ -1,14 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.sql.Array;
@@ -33,14 +39,28 @@ public class ColorDetector extends OpenCvPipeline {
     int[] rights;
 
 
-    public ColorDetector(Point[] points, int width, int height, boolean isRed) {
+    public ColorDetector(Point[] points, int width, int height, boolean isRed, HardwareMap hardwareMap) {
         point1 = points[0];
         point2 = points[1];
         point3 = points[2];
         this.width = width;
         this.height = height;
         this.isRed = isRed;
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        OpenCvCamera camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        camera.setPipeline(this);
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                camera.startStreaming(800, 448, OpenCvCameraRotation.UPRIGHT);
+            }
 
+            @Override
+            public void onError(int errorCode) {
+
+            }
+        });
+        FtcDashboard.getInstance().startCameraStream(camera, 0);
     }
 
     Rect findPoints(Point center) {
