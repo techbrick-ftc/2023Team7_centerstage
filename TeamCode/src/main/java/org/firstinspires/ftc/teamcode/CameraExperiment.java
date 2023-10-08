@@ -27,41 +27,13 @@ public class CameraExperiment extends LinearOpMode {
         Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
 
 
-        ColorDetector colorDetector = new ColorDetector(points, 10, 10, false);
-
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        camera.setPipeline(colorDetector);
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-            @Override
-            public void onOpened() {
-                camera.startStreaming(800, 448, OpenCvCameraRotation.UPRIGHT);
-            }
-
-            @Override
-            public void onError(int errorCode) {
-
-            }
-        });
-        FtcDashboard.getInstance().startCameraStream(camera, 0);
+        ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
 
         waitForStart();
         while (opModeIsActive()) {
             TelemetryPacket packet = new TelemetryPacket();
             //packet.put("x", 3.7);
             packet.put("location", colorDetector.location);
-            for (int i = 0; i < colorDetector.lefts.length; i++) {
-                packet.put(" leftRed " + i, colorDetector.lefts[i]);
-
-            }
-            for (int i = 0; i < colorDetector.lefts.length; i++) {
-                packet.put(" centerRed " + i, colorDetector.centers[i]);
-
-            }
-            for (int i = 0; i < colorDetector.lefts.length; i++) {
-                packet.put(" rightRed " + i, colorDetector.rights[i]);
-
-            }
             dashboard.sendTelemetryPacket(packet);
 
 
