@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -50,7 +49,6 @@ public class AutoRedBack extends LinearOpMode  {
 
         ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
-        Pose2d startPose = new Pose2d(-36, -60, Math.toRadians(0));
         waitForStart();
         // detect the colour (positions are estimates)
         if (colorDetector.location == Location.CENTER) {
