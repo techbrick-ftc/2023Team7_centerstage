@@ -43,14 +43,17 @@ public class AutoDrive extends StarterAuto {
         TelemetryPacket packet = new TelemetryPacket();
         initialize();
         waitForStart();
-       double x= deadLeft.getCurrentPosition();
-        double y= deadRight.getCurrentPosition();
-        double z= deadPerp.getCurrentPosition();
-        packet.put("deadLeft",x);
-        packet.put("deadRight",y);
-        packet.put("deadPerp",z);
-        dashboard.sendTelemetryPacket(packet);
-
+        zeroAngle = imu.getAngularOrientation().firstAngle;
+        while(opModeIsActive()) {
+            double x = deadLeft.getCurrentPosition()*inPerTick;
+            double y = deadRight.getCurrentPosition()*inPerTick;
+            double z = deadPerp.getCurrentPosition()*inPerTick;
+            driveToPoint(new Pose(0,0,3.14159));
+            packet.put("deadLeft", x);
+            packet.put("deadRight", y);
+            packet.put("deadPerp", z);
+            dashboard.sendTelemetryPacket(packet);
+        }
     }
     }
 
