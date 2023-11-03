@@ -26,6 +26,9 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -43,12 +46,15 @@ public class AutoDrive extends StarterAuto {
         TelemetryPacket packet = new TelemetryPacket();
         initialize();
         waitForStart();
-        zeroAngle = imu.getAngularOrientation().firstAngle;
+        zeroAngle = getCurrentPose().angle;
         while(opModeIsActive()) {
             double x = deadLeft.getCurrentPosition()*inPerTick;
             double y = deadRight.getCurrentPosition()*inPerTick;
             double z = deadPerp.getCurrentPosition()*inPerTick;
-            driveToPoint(new Pose(0,0,3.14159));
+            asyncPositionCorrector();
+            driveToPoint(new Pose(10,10,Math.PI/2));
+            //testAngular();
+            packet.put("Field Pose",fieldPose);
             packet.put("deadLeft", x);
             packet.put("deadRight", y);
             packet.put("deadPerp", z);
