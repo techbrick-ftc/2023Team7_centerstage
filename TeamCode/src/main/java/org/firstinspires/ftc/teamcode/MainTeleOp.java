@@ -9,6 +9,10 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+
 @TeleOp
 public class MainTeleOp extends StarterAuto {
 
@@ -40,7 +44,7 @@ public class MainTeleOp extends StarterAuto {
 
         waitForStart();
 
-        zeroAngle = imu.getAngularOrientation().firstAngle;
+        zeroAngle = getCurrentPose().angle;
 
         while (opModeIsActive()) {
 
@@ -77,10 +81,10 @@ public class MainTeleOp extends StarterAuto {
             }
 
             // Read inverse IMU heading, as the IMU heading is CW positive
-            double botHeading = -(imu.getAngularOrientation().firstAngle - zeroAngle);
+            double botHeading = -(getCurrentPose().angle );
 
             if (gamepad1.y) {
-                zeroAngle = imu.getAngularOrientation().firstAngle;
+                zeroAngle = getCurrentPose().angle;
             }
             if (cur1.b && !previousGamepad1.b) {
                 fieldCentric = !fieldCentric;
@@ -124,9 +128,9 @@ public class MainTeleOp extends StarterAuto {
             backLeft.setPower(backLeftPower);      // back
 
             packet.put("zer", Math.toDegrees(zeroAngle));
-            packet.put("imu x ", Math.toDegrees(imu.getAngularOrientation().firstAngle));
-            packet.put("imu y ", Math.toDegrees(imu.getAngularOrientation().secondAngle));
-            packet.put("imu z ", Math.toDegrees(imu.getAngularOrientation().thirdAngle));
+            packet.put("imu x ", Math.toDegrees(getCurrentPose().angle));
+            packet.put("imu y ", Math.toDegrees(imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).secondAngle));
+            packet.put("imu z ", Math.toDegrees(imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle));
 
             dashboard.sendTelemetryPacket(packet);
 

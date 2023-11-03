@@ -3,18 +3,23 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -73,7 +78,10 @@ class Pose{
 }
 
 public class StarterAuto extends LinearOpMode {
+
+    Pose fieldPose = new Pose(0,0,0);
     double zeroAngle = 0;
+    double ticksPerRadian = 39.54*(360/(Math.PI*2));
     public double inPerTick = 20/6786.0;
     public double lateralInPerTick =20/6786.0;
     static final double FEET_PER_METER = 3.28084;
@@ -86,7 +94,7 @@ public class StarterAuto extends LinearOpMode {
     public DcMotor backLeft;
     public DcMotor frontRight;
     public DcMotor backRight;
-    public BNO055IMU imu;
+    public IMU imu;
     public DcMotorEx deadPerp;
 
     public DcMotorEx deadLeft;
@@ -106,9 +114,13 @@ public class StarterAuto extends LinearOpMode {
     double cy = 90.751;
     // UNITS ARE METERS
     double tagsize = 0.045;
+    double previousAngle = 0;
+    double previousX = 0;
+    double spinCounter = 0;
     int numFramesWithoutDetection = 0;
     int[] arrayDetections = new int[64];
     int detectionIndex = 0;
+    private Pose lastPose;
 
     public void insertDetection(int value) {
         arrayDetections[detectionIndex] = value;
@@ -117,13 +129,12 @@ public class StarterAuto extends LinearOpMode {
             detectionIndex = 0;
         }
     }
-
     void drivingCorrectionStraight(double startAngle2, double power) {
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("angle", imu.getAngularOrientation().firstAngle);
+        packet.put("angle", getCurrentPose().angle);
         dashboard.sendTelemetryPacket(packet);
 
-        double difference = imu.getAngularOrientation().firstAngle - startAngle2;
+        double difference = getCurrentPose().angle - startAngle2;
         difference /= Math.PI * 2;
         difference *= power;
         backRight.setPower(power - difference);
@@ -131,17 +142,65 @@ public class StarterAuto extends LinearOpMode {
         frontLeft.setPower(power + difference);
         frontRight.setPower(power - difference);
     }
+    void asyncPositionCorrector(){
+        if(lastPose==null){
+            lastPose=getCurrentPose();
+            return;
+        }
+        Pose current = getCurrentPose();
+        double achange = current.angle-lastPose.angle;
+        double xchange = current.x-lastPose.x;
+        double ychange = current.y-lastPose.y;
+        if(achange >Math.PI){
+            achange-=Math.PI*2;
+        } else if (achange <-Math.PI) {
+            achange+=Math.PI*2;
+
+        }
+        double correctedx = xchange-achange*ticksPerRadian*inPerTick;
+        double rotA = current.angle/2 + lastPose.angle/2;
+        double rotX = correctedx * Math.cos(rotA) - ychange * Math.sin(rotA);
+        double rotY = correctedx * Math.sin(rotA) + ychange * Math.cos(rotA);
+        lastPose = current;
+        fieldPose.x +=rotX;
+        fieldPose.y +=rotY;
+        fieldPose.angle = current.angle;
+
+    }
     Pose getCurrentPose(){
         double y = (deadLeft.getCurrentPosition()*inPerTick+deadRight.getCurrentPosition()*inPerTick)/2;
-        Pose current = new Pose(deadPerp.getCurrentPosition()*inPerTick,y,(imu.getAngularOrientation().firstAngle - zeroAngle));
+        Pose current = new Pose(deadPerp.getCurrentPosition()*inPerTick,y,(imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle - zeroAngle ));
         return current;
     }
-
+    public void testAngular(){
+        TelemetryPacket packet = new TelemetryPacket();
+        frontRight.setPower(-1);  // front
+        frontLeft.setPower(1);    // left
+        backRight.setPower(-1);    // right
+        backLeft.setPower(1);
+        while(opModeIsActive()) {
+            
+            Pose current = new Pose(deadPerp.getCurrentPosition(), 0, positiveWrap((getCurrentPose().angle )));
+            current.angle = Math.toDegrees(current.angle);
+            packet.put("x",current.x);
+            packet.put("angkle",current.angle);
+            packet.put("previousangle",previousAngle);
+            if(current.angle>previousAngle)
+            {
+                spinCounter+=1;
+            }
+            packet.put("spincointer",spinCounter);
+            packet.put("ratio",(current.x/(-spinCounter*360+current.angle)));
+            previousAngle = (current.angle);
+            dashboard.sendTelemetryPacket(packet);
+        }
+    }
     public
     void driveToPoint(Pose target){
+        // when rotating motors commit to wrong direction, is the issue
         TelemetryPacket packet = new TelemetryPacket();
         Pose cur = getCurrentPose();
-        Pose coord = new Pose(target.x-cur.x,target.y-cur.y,wrap(positiveWrap(target.angle)-positiveWrap(cur.angle)));
+        Pose coord = new Pose(target.x-cur.x,target.y-cur.y,((target.angle)-(cur.angle)));
         packet.put("Dif",coord);
         double rotX = coord.x * Math.cos(cur.angle) - coord.y * Math.sin(cur.angle);
         double rotY = coord.x * Math.sin(cur.angle) + coord.y * Math.cos(cur.angle);
@@ -173,19 +232,21 @@ public class StarterAuto extends LinearOpMode {
         packet.put("fronrightPower",frontRightPower);
         packet.put("backrightpower",backRightPower);
         packet.put("backleftPower",backLeftPower);
-        frontRight.setPower(frontRightPower);  // front
-        frontLeft.setPower(frontLeftPower);    // left
-        backRight.setPower(backRightPower);    // right
-        backLeft.setPower(backLeftPower);      // back
+//        frontRight.setPower(frontRightPower);  // front
+//        frontLeft.setPower(frontLeftPower);    // left
+//        backRight.setPower(backRightPower);    // right
+//        backLeft.setPower(backLeftPower);      // back
+
+
         dashboard.sendTelemetryPacket(packet);
     }
 
     void drivingCorrectionLeft(double startAngle, double power) {
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("angle", imu.getAngularOrientation().firstAngle);
+        packet.put("angle", getCurrentPose().angle);
         dashboard.sendTelemetryPacket(packet);
 
-        double difference = imu.getAngularOrientation().firstAngle - startAngle;
+        double difference = getCurrentPose().angle - startAngle;
         difference /= Math.PI * 2;
         difference *= power;
         frontRight.setPower(power - difference);
@@ -200,7 +261,29 @@ public class StarterAuto extends LinearOpMode {
         frontLeft.setPower(0);
         frontRight.setPower(0);
     }
+    protected boolean acceleration(boolean slow,double distance, double speeds, double startdeceleration, double accelerationconstant, double decelerationconstant, double targetspeed) {
+        double startDecel = startdeceleration;
+        boolean slowDown = slow;
+        double d = distance;
+        double speed = speeds;
+        double accelconstant = accelerationconstant;
+        double deccelconstant = decelerationconstant;
+        if (d <= 0.01) {
+            motorsStop();
+            return true;
+        }
+        if (slowDown) {
+            if (d < startDecel) {
+                //Motors would all be slower
+            } else if (targetspeed - speed > 0.02) {
+                //Motors would get faster
+            } else {
+                //Speed is normal
+            }
+        }
 
+    return false;
+    }
 
 
 
@@ -230,15 +313,22 @@ public class StarterAuto extends LinearOpMode {
     }
 
     boolean shouldStopTurning(double targetAngle) {
-        double currentAngle = imu.getAngularOrientation().firstAngle;
+        double currentAngle = getCurrentPose().angle;
         return Math.abs(currentAngle - targetAngle) < .005 * Math.PI;
     }
 
     protected void initialize() {
-        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
-        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
-        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-        backRight = hardwareMap.get(DcMotor.class, "backRight");
+//        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+//        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+//        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+//        backRight = hardwareMap.get(DcMotor.class, "backRight");
+
+        frontLeft = hardwareMap.get(DcMotor.class, "backRight");
+        backLeft = hardwareMap.get(DcMotor.class, "frontRight");
+        frontRight = hardwareMap.get(DcMotor.class, "backLeft");
+        backRight = hardwareMap.get(DcMotor.class, "frontLeft");
+
+
         deadLeft = hardwareMap.get(DcMotorEx.class,"par1");
         deadRight = hardwareMap.get(DcMotorEx.class,"par0");
         deadPerp = hardwareMap.get(DcMotorEx.class,"perp");
@@ -256,18 +346,19 @@ public class StarterAuto extends LinearOpMode {
 
 
 
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu = hardwareMap.get(IMU.class, "imu");
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         telemetry.update();
 
-        BNO055IMU.Parameters params = new BNO055IMU.Parameters();
-        imu.initialize(params);
+
+        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.DOWN, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
+        zeroAngle =(imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle - zeroAngle );
     }
 
 
@@ -278,15 +369,15 @@ public class StarterAuto extends LinearOpMode {
 
     void turnRobot(double angle, boolean clockwise) {
         double directionalSpeed = clockwise ? 1 : -1;
-        double targetAngle = wrap(imu.getAngularOrientation().firstAngle + angle);
+        double targetAngle = wrap(getCurrentPose().angle + angle);
         while (opModeIsActive() && !shouldStopTurning(targetAngle)) {
 
-            telemetry.addData("angle", imu.getAngularOrientation().firstAngle);
+            telemetry.addData("angle", getCurrentPose().angle);
             telemetry.update();
 
-            if (Math.abs(imu.getAngularOrientation().firstAngle - targetAngle) < 0.05 * Math.PI) {
+            if (Math.abs(getCurrentPose().angle - targetAngle) < 0.05 * Math.PI) {
                 directionalSpeed *= 0.3;
-            } else if (Math.abs(imu.getAngularOrientation().firstAngle - targetAngle) < 0.1 * Math.PI) {
+            } else if (Math.abs(getCurrentPose().angle - targetAngle) < 0.1 * Math.PI) {
                 directionalSpeed *= 0.5;
             }
 
@@ -304,11 +395,11 @@ public class StarterAuto extends LinearOpMode {
     }
 
     protected void imuAngle() {
-        telemetry.addData("IMU Angle", imu.getAngularOrientation().firstAngle);
+        telemetry.addData("IMU Angle", getCurrentPose().angle);
         telemetry.update();
 
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("IMU Angle", imu.getAngularOrientation().firstAngle);
+        packet.put("IMU Angle", getCurrentPose().angle);
         dashboard.sendTelemetryPacket(packet);
     }
 
