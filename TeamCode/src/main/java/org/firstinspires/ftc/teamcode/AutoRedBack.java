@@ -11,7 +11,7 @@ import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
 
 @Autonomous(name = "red autonomous")
-public class AutoRedBack extends LinearOpMode  {
+public class AutoRedBack extends StarterAuto  {
     public DcMotor frontLeft;
     public DcMotor backLeft;
     public DcMotor frontRight;
@@ -36,7 +36,7 @@ public class AutoRedBack extends LinearOpMode  {
         colorBL = hardwareMap.colorSensor.get("colorBL");
     }
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         initialize();
         int pos1X = 124;
         int pos1Y = 310;

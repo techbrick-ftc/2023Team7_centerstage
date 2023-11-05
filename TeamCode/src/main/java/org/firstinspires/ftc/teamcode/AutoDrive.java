@@ -47,19 +47,31 @@ public class AutoDrive extends StarterAuto {
         initialize();
         waitForStart();
         zeroAngle = getCurrentPose().angle;
-        while(opModeIsActive()) {
-            double x = deadLeft.getCurrentPosition()*inPerTick;
-            double y = deadRight.getCurrentPosition()*inPerTick;
-            double z = deadPerp.getCurrentPosition()*inPerTick;
+        long currentTime = System.nanoTime();
+        long previousTime = System.nanoTime();
+        boolean done = false;
+
+        while(opModeIsActive() && !done) {
             asyncPositionCorrector();
-            driveToPoint(new Pose(10,10,Math.PI/2));
+            done = driveToPoint(new Pose(0,50,0),true);
+
             //testAngular();
-            packet.put("Field Pose",fieldPose);
-            packet.put("deadLeft", x);
-            packet.put("deadRight", y);
-            packet.put("deadPerp", z);
-            dashboard.sendTelemetryPacket(packet);
+            //Max forward velocity is 80 in/sec
+            //Max strafe velocity is 70 in/sec
+//            frontLeft.setPower(1);
+//            frontRight.setPower(-1);
+//            backLeft.setPower(1);
+//            backRight.setPower(-1);
+//            packet.put("Field Pose",fieldPose);
+//            packet.put("velocity Pose",velocityPose.angle);
+//            dashboard.sendTelemetryPacket(packet);
         }
+        done = false;
+        while(opModeIsActive()&& !done){
+            asyncPositionCorrector();
+            done = driveToPoint(new Pose(96,48,0),true);
+        }
+        //turnRobot(Math.PI/2);
     }
     }
 

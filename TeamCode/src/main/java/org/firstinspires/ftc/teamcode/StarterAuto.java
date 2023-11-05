@@ -27,6 +27,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 import java.lang.Math;
+
 /*
 Configurations:
 Expansion Hub:
@@ -60,30 +61,40 @@ Expansion Hub:
 
 
  */
-class Pose{
-    Pose(double x, double y, double a)
-    {
+class Pose {
+    Pose(double x, double y, double a) {
         this.x = x;
         this.y = y;
         angle = a;
     }
+
     public double x;
     public double y;
 
     public double angle;
-    public String toString()
-    {
+
+    public String toString() {
         return "Pose(X = " + x + ", Y = " + y + ", Angle in Radians = " + angle + ", Angle in Degrees = " + Math.toDegrees(angle) + ")";
     }
 }
 
 public class StarterAuto extends LinearOpMode {
 
-    Pose fieldPose = new Pose(0,0,0);
+    double lastTime;
+    double startDecel = 30;
+
+    double stopDecel = .1;
+
+    double decelRate = .3;
+
+    double decelConstant = (.15 - Math.pow(decelRate, -(stopDecel - startDecel)));
+
+    Pose fieldPose = new Pose(0, 0, 0);
+    Pose velocityPose = new Pose(0, 0, 0);
     double zeroAngle = 0;
-    double ticksPerRadian = 39.54*(360/(Math.PI*2));
-    public double inPerTick = 20/6786.0;
-    public double lateralInPerTick =20/6786.0;
+    double ticksPerRadian = 28.58 * (360 / (Math.PI * 2));
+    public double inPerTick = 20 / 6786.0;
+    public double lateralInPerTick = 20 / 6786.0;
     static final double FEET_PER_METER = 3.28084;
     final float DECIMATION_HIGH = 3;
     final float DECIMATION_LOW = 2;
@@ -105,9 +116,9 @@ public class StarterAuto extends LinearOpMode {
     public ColorSensor colorBR;
     public ColorSensor colorBL;
     public TouchSensor armuptouch;
-//    public AnalogInput stringpot;
+    //    public AnalogInput stringpot;
 //    public AnalogInput armpot;
-   // OpenCvCamera camera;
+    // OpenCvCamera camera;
     double fx = 1481.603;
     double fy = 1527.539;
     double cx = 550.003;
@@ -120,6 +131,7 @@ public class StarterAuto extends LinearOpMode {
     int numFramesWithoutDetection = 0;
     int[] arrayDetections = new int[64];
     int detectionIndex = 0;
+    double maxVelocity = 70.0;
     private Pose lastPose;
 
     public void insertDetection(int value) {
@@ -129,6 +141,7 @@ public class StarterAuto extends LinearOpMode {
             detectionIndex = 0;
         }
     }
+
     void drivingCorrectionStraight(double startAngle2, double power) {
         TelemetryPacket packet = new TelemetryPacket();
         packet.put("angle", getCurrentPose().angle);
@@ -142,104 +155,137 @@ public class StarterAuto extends LinearOpMode {
         frontLeft.setPower(power + difference);
         frontRight.setPower(power - difference);
     }
-    void asyncPositionCorrector(){
-        if(lastPose==null){
-            lastPose=getCurrentPose();
+
+    void asyncPositionCorrector() {
+        TelemetryPacket packet = new TelemetryPacket();
+        if (lastPose == null) {
+            lastPose = getCurrentPose();
             return;
         }
         Pose current = getCurrentPose();
-        double achange = current.angle-lastPose.angle;
-        double xchange = current.x-lastPose.x;
-        double ychange = current.y-lastPose.y;
-        if(achange >Math.PI){
-            achange-=Math.PI*2;
-        } else if (achange <-Math.PI) {
-            achange+=Math.PI*2;
+        double currentTime = System.currentTimeMillis() / 1000.0;
+        double achange = current.angle - lastPose.angle;
+        double xchange = current.x - lastPose.x;
+        double ychange = current.y - lastPose.y;
+        if (achange > Math.PI) {
+            achange -= Math.PI * 2;
+        } else if (achange < -Math.PI) {
+            achange += Math.PI * 2;
 
         }
-        double correctedx = xchange-achange*ticksPerRadian*inPerTick;
-        double rotA = current.angle/2 + lastPose.angle/2;
+        double correctedx = xchange - achange * ticksPerRadian * inPerTick;
+        double rotA = current.angle / 2 + lastPose.angle / 2;
         double rotX = correctedx * Math.cos(rotA) - ychange * Math.sin(rotA);
         double rotY = correctedx * Math.sin(rotA) + ychange * Math.cos(rotA);
         lastPose = current;
-        fieldPose.x +=rotX;
-        fieldPose.y +=rotY;
+        fieldPose.x += rotX;
+        fieldPose.y += rotY;
         fieldPose.angle = current.angle;
-
+        velocityPose.x = rotX / ((currentTime - lastTime));
+        velocityPose.y = rotY / ((currentTime - lastTime));
+        velocityPose.angle = achange / (currentTime - lastTime);
+        lastTime = currentTime;
+        packet.put("Field Pose", fieldPose);
+        dashboard.sendTelemetryPacket(packet);
     }
-    Pose getCurrentPose(){
-        double y = (deadLeft.getCurrentPosition()*inPerTick+deadRight.getCurrentPosition()*inPerTick)/2;
-        Pose current = new Pose(deadPerp.getCurrentPosition()*inPerTick,y,(imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle - zeroAngle ));
+
+    Pose getCurrentPose() {
+        double y = (deadLeft.getCurrentPosition() * inPerTick + deadRight.getCurrentPosition() * inPerTick) / 2;
+        Pose current = new Pose(deadPerp.getCurrentPosition() * inPerTick, y, (imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle - zeroAngle));
         return current;
     }
-    public void testAngular(){
+
+    public void setPower(DcMotor motor, double targetPower, String name) {
+        TelemetryPacket packet = new TelemetryPacket();
+        double currentPower = motor.getPower();
+        if (Math.abs(targetPower) - .1 > Math.abs(currentPower)) {
+
+            double powerChange = 0.0125 * Math.signum(targetPower); // Adjust power based on the sign of targetPower
+
+            double newPower = currentPower + powerChange;
+
+            // Make sure newPower stays within the valid range of -1.0 to 1.0
+            newPower = Math.max(-1.0, Math.min(1.0, newPower));
+
+
+            motor.setPower(newPower);
+            packet.put(name, newPower);
+        } else {
+            if (Math.abs(targetPower) > 0 && Math.abs(targetPower) < 0.2) {
+                targetPower = Math.signum(targetPower) * .2;
+            }
+            motor.setPower(targetPower);
+            packet.put(name, targetPower);
+        }
+        dashboard.sendTelemetryPacket(packet);
+    }
+
+    public void testAngular() {
         TelemetryPacket packet = new TelemetryPacket();
         frontRight.setPower(-1);  // front
         frontLeft.setPower(1);    // left
         backRight.setPower(-1);    // right
         backLeft.setPower(1);
-        while(opModeIsActive()) {
-            
-            Pose current = new Pose(deadPerp.getCurrentPosition(), 0, positiveWrap((getCurrentPose().angle )));
+        while (opModeIsActive()) {
+
+            Pose current = new Pose(deadPerp.getCurrentPosition(), 0, positiveWrap((getCurrentPose().angle)));
             current.angle = Math.toDegrees(current.angle);
-            packet.put("x",current.x);
-            packet.put("angkle",current.angle);
-            packet.put("previousangle",previousAngle);
-            if(current.angle>previousAngle)
-            {
-                spinCounter+=1;
+            packet.put("x", current.x);
+            packet.put("angkle", current.angle);
+            packet.put("previousangle", previousAngle);
+            if (current.angle > previousAngle) {
+                spinCounter += 1;
             }
-            packet.put("spincointer",spinCounter);
-            packet.put("ratio",(current.x/(-spinCounter*360+current.angle)));
+            packet.put("spincointer", spinCounter);
+            packet.put("ratio", (current.x / (-spinCounter * 360 + current.angle)));
             previousAngle = (current.angle);
             dashboard.sendTelemetryPacket(packet);
         }
     }
-    public
-    void driveToPoint(Pose target){
+
+    public boolean driveToPoint(Pose target,boolean slowDown) {
         // when rotating motors commit to wrong direction, is the issue
         TelemetryPacket packet = new TelemetryPacket();
-        Pose cur = getCurrentPose();
-        Pose coord = new Pose(target.x-cur.x,target.y-cur.y,((target.angle)-(cur.angle)));
-        packet.put("Dif",coord);
+        Pose cur = fieldPose;
+        Pose coord = new Pose(target.x - cur.x, target.y - cur.y, wrap((target.angle) - (cur.angle)));
+        packet.put("Dif", coord);
         double rotX = coord.x * Math.cos(cur.angle) - coord.y * Math.sin(cur.angle);
         double rotY = coord.x * Math.sin(cur.angle) + coord.y * Math.cos(cur.angle);
-        double denom = Math.max(Math.abs(rotX),Math.abs(rotY));
-        if(denom != 0){
-            rotX = rotX/denom;
-            rotY = rotY/denom;
+        double denom = Math.max(Math.abs(rotX), Math.abs(rotY));
+        if (denom != 0) {
+            rotX = rotX / denom;
+            rotY = rotY / denom;
         }
-
-        packet.put("Current",cur);
-        packet.put("rotx",rotX);
-        packet.put("roty",rotY);
         // Denominator is the largest motor power (absolute value) or 1
         // This ensures all the powers maintain the same ratio, but only when
         // at least one is out of the range [-1, 1]
-        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(coord.angle), 1);
+        double angleFactor = coord.angle;
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(angleFactor), 1);
+        double multiplier = deceleration(slowDown, coord.x, coord.y, coord.angle);
+        packet.put("Multiplier", multiplier);
+        double frontLeftPower = ((rotY + rotX - angleFactor) / denominator) * multiplier;
+        double backLeftPower = ((rotY - rotX - angleFactor) / denominator) * multiplier;
+        double frontRightPower = ((rotY - rotX + angleFactor) / denominator) * multiplier;
+        double backRightPower = ((rotY + rotX + angleFactor) / denominator) * multiplier;
 
-
-            double frontLeftPower = ((rotY + rotX - coord.angle) / denominator)*.4;
-            double backLeftPower = ((rotY - rotX - coord.angle) / denominator)*.4;
-            double frontRightPower = ((rotY - rotX + coord.angle ) / denominator)*.4;
-            double backRightPower = ((rotY + rotX + coord.angle) / denominator)*.4;
-
-//        double frontLeftPower = (rotY + rotX - endingAngle);
-//        double backLeftPower = (rotY - rotX - endingAngle);
-//        double frontRightPower = (rotY - rotX + endingAngle);
-//        double backRightPower = (rotY + rotX + endingAngle);
-        packet.put("frontleftPower",frontLeftPower);
-        packet.put("fronrightPower",frontRightPower);
-        packet.put("backrightpower",backRightPower);
-        packet.put("backleftPower",backLeftPower);
-//        frontRight.setPower(frontRightPower);  // front
-//        frontLeft.setPower(frontLeftPower);    // left
-//        backRight.setPower(backRightPower);    // right
-//        backLeft.setPower(backLeftPower);      // back
+//        packet.put("frontleftPower",frontLeftPower);
+//        packet.put("fronrightPower",frontRightPower);
+//        packet.put("backrightpower",backRightPower);
+//        packet.put("backleftPower",backLeftPower);
+        setPower(frontRight, frontRightPower, "frontRight");
+        setPower(frontLeft, frontLeftPower, "frontLeft");
+        setPower(backRight, backRightPower, "backRight");
+        setPower(backLeft, backLeftPower, "backLeft");
 
 
         dashboard.sendTelemetryPacket(packet);
+        if (multiplier == 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
+
 
     void drivingCorrectionLeft(double startAngle, double power) {
         TelemetryPacket packet = new TelemetryPacket();
@@ -261,30 +307,45 @@ public class StarterAuto extends LinearOpMode {
         frontLeft.setPower(0);
         frontRight.setPower(0);
     }
-    protected boolean acceleration(boolean slow,double distance, double speeds, double startdeceleration, double accelerationconstant, double decelerationconstant, double targetspeed) {
-        double startDecel = startdeceleration;
+
+    protected double deceleration(boolean slow, double rotX, double rotY, double angleDiff) {
         boolean slowDown = slow;
-        double d = distance;
-        double speed = speeds;
-        double accelconstant = accelerationconstant;
-        double deccelconstant = decelerationconstant;
-        if (d <= 0.01) {
-            motorsStop();
-            return true;
+        double angleConstant = .1 / (10 * (Math.PI * 2) / 360);
+        double d = Math.sqrt(((rotX * rotX) + (rotY * rotY)));// + Math.abs(angleDiff * angleConstant);
+        double step = 1;
+        double powerLinear = 0;
+
+
+        // double speed = speeds;
+        // double accelconstant = accelerationconstant;
+        // double deccelconstant = decelerationconstant;
+        double multiplier = 1;
+        if ((d <= stopDecel)) {
+            return 0;
         }
         if (slowDown) {
             if (d < startDecel) {
                 //Motors would all be slower
-            } else if (targetspeed - speed > 0.02) {
-                //Motors would get faster
-            } else {
+                //multiplier =(Math.pow(decelRate,-(d-startDecel)))+decelConstant;
+//                while(step*startDecel>d){
+//                    step -= (1.0/3.0);
+//                    multiplier *= .5;
+//                }
+                powerLinear = ((.7 / (startDecel - stopDecel)) * (d - stopDecel) + .3) - 1 * (Math.sqrt((velocityPose.x * velocityPose.x) + (velocityPose.y * velocityPose.y)) / maxVelocity);
+                return powerLinear;
+            }
+//           else if (targetspeed - speed > 0.02) {
+//                //Motors would get faster
+//                return 1;
+            //  }
+            else {
                 //Speed is normal
+                return 1;
             }
         }
 
-    return false;
+        return 1;
     }
-
 
 
     private double wrap(double theta) {
@@ -298,16 +359,14 @@ public class StarterAuto extends LinearOpMode {
         }
         return newTheta;
     }
-    private double positiveWrap(double theta)
-    {
+
+    private double positiveWrap(double theta) {
         double newTheta = theta;
-        while(newTheta>Math.PI*2)
-        {
-            newTheta -=Math.PI*2;
+        while (newTheta > Math.PI * 2) {
+            newTheta -= Math.PI * 2;
         }
-        while(newTheta<0)
-        {
-            newTheta += Math.PI*2;
+        while (newTheta < 0) {
+            newTheta += Math.PI * 2;
         }
         return newTheta;
     }
@@ -329,12 +388,13 @@ public class StarterAuto extends LinearOpMode {
         backRight = hardwareMap.get(DcMotor.class, "frontLeft");
 
 
-        deadLeft = hardwareMap.get(DcMotorEx.class,"par1");
-        deadRight = hardwareMap.get(DcMotorEx.class,"par0");
-        deadPerp = hardwareMap.get(DcMotorEx.class,"perp");
+        deadLeft = hardwareMap.get(DcMotorEx.class, "par1");
+        deadRight = hardwareMap.get(DcMotorEx.class, "par0");
+        deadPerp = hardwareMap.get(DcMotorEx.class, "perp");
         deadLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         deadRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         deadPerp.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        deadPerp.setDirection(DcMotorSimple.Direction.REVERSE);
         deadLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
@@ -342,8 +402,6 @@ public class StarterAuto extends LinearOpMode {
         colorFL = hardwareMap.colorSensor.get("colorFL");
         colorBR = hardwareMap.colorSensor.get("colorBR");
         colorBL = hardwareMap.colorSensor.get("colorBL");
-
-
 
 
         imu = hardwareMap.get(IMU.class, "imu");
@@ -358,40 +416,34 @@ public class StarterAuto extends LinearOpMode {
 
 
         imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.DOWN, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
-        zeroAngle =(imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle - zeroAngle );
+        zeroAngle = (imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle - zeroAngle);
     }
 
 
-
-
-
-
-
-    void turnRobot(double angle, boolean clockwise) {
-        double directionalSpeed = clockwise ? 1 : -1;
-        double targetAngle = wrap(getCurrentPose().angle + angle);
-        while (opModeIsActive() && !shouldStopTurning(targetAngle)) {
-
-            telemetry.addData("angle", getCurrentPose().angle);
-            telemetry.update();
-
-            if (Math.abs(getCurrentPose().angle - targetAngle) < 0.05 * Math.PI) {
+    void turnRobot(double angle) {
+        double difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
+        double directionalSpeed = Math.signum(difAngle)*0.5;
+        while (opModeIsActive() && !((difAngle) < Math.toRadians(2))) {
+            asyncPositionCorrector();
+            if (Math.abs(difAngle) < 0.05 * Math.PI) {
                 directionalSpeed *= 0.3;
-            } else if (Math.abs(getCurrentPose().angle - targetAngle) < 0.1 * Math.PI) {
+            } else if (Math.abs(difAngle) < 0.1 * Math.PI) {
                 directionalSpeed *= 0.5;
             }
+            difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
 
-            backLeft.setPower(directionalSpeed);
-            frontRight.setPower(-directionalSpeed);
-            backRight.setPower(-directionalSpeed);
-            frontLeft.setPower(directionalSpeed);
+
+            setPower(backLeft,directionalSpeed,"backLeft");
+            setPower(backRight,-directionalSpeed,"backRight");
+            setPower(frontLeft,directionalSpeed,"frontLeft");
+            setPower(frontRight,-directionalSpeed,"frontRight");
 
         }
 
-        backLeft.setPower(0);
-        frontRight.setPower(0);
-        backRight.setPower(0);
-        frontLeft.setPower(0);
+        setPower(backLeft,0,"backLeft");
+        setPower(backRight,0,"backRight");
+        setPower(frontLeft,0,"frontLeft");
+        setPower(frontRight,0,"frontRight");
     }
 
     protected void imuAngle() {
