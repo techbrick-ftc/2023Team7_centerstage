@@ -111,6 +111,8 @@ public class StarterAuto extends LinearOpMode {
     public DcMotorEx deadLeft;
 
     public DcMotorEx deadRight;
+    public DcMotor armMotor;
+    public DcMotor stringMotor;
     public ColorSensor colorFR;
     public ColorSensor colorFL;
     public ColorSensor colorBR;
@@ -243,7 +245,7 @@ public class StarterAuto extends LinearOpMode {
         }
     }
 
-    public boolean driveToPoint(Pose target,boolean slowDown) {
+    public boolean driveToPoint(Pose target, boolean slowDown) {
         // when rotating motors commit to wrong direction, is the issue
         TelemetryPacket packet = new TelemetryPacket();
         Pose cur = fieldPose;
@@ -422,7 +424,7 @@ public class StarterAuto extends LinearOpMode {
 
     void turnRobot(double angle) {
         double difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
-        double directionalSpeed = Math.signum(difAngle)*0.5;
+        double directionalSpeed = Math.signum(difAngle) * 0.5;
         while (opModeIsActive() && !((difAngle) < Math.toRadians(2))) {
             asyncPositionCorrector();
             if (Math.abs(difAngle) < 0.05 * Math.PI) {
@@ -433,17 +435,17 @@ public class StarterAuto extends LinearOpMode {
             difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
 
 
-            setPower(backLeft,directionalSpeed,"backLeft");
-            setPower(backRight,-directionalSpeed,"backRight");
-            setPower(frontLeft,directionalSpeed,"frontLeft");
-            setPower(frontRight,-directionalSpeed,"frontRight");
+            setPower(backLeft, directionalSpeed, "backLeft");
+            setPower(backRight, -directionalSpeed, "backRight");
+            setPower(frontLeft, directionalSpeed, "frontLeft");
+            setPower(frontRight, -directionalSpeed, "frontRight");
 
         }
 
-        setPower(backLeft,0,"backLeft");
-        setPower(backRight,0,"backRight");
-        setPower(frontLeft,0,"frontLeft");
-        setPower(frontRight,0,"frontRight");
+        setPower(backLeft, 0, "backLeft");
+        setPower(backRight, 0, "backRight");
+        setPower(frontLeft, 0, "frontLeft");
+        setPower(frontRight, 0, "frontRight");
     }
 
     protected void imuAngle() {
@@ -453,6 +455,29 @@ public class StarterAuto extends LinearOpMode {
         TelemetryPacket packet = new TelemetryPacket();
         packet.put("IMU Angle", getCurrentPose().angle);
         dashboard.sendTelemetryPacket(packet);
+    }
+
+    protected void stringMove(double rightTrigger, double leftTrigger) {
+        if (rightTrigger > 0) {
+//            if (stringpot.getVoltage() <= VOLTSSTRINGUP) {
+//                stringMotor.setPower(0);
+//                stringPotLastVal = stringpot.getVoltage();
+//            } else {
+                stringMotor.setPower(-rightTrigger);
+//                stringPotLastVal = stringpot.getVoltage();
+
+        } else if (leftTrigger > 0) {
+//            if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
+//                stringMotor.setPower(0);
+//                stringPotLastVal = stringpot.getVoltage();
+//
+//            } else {
+            stringMotor.setPower(leftTrigger);
+//                stringPotLastVal = stringpot.getVoltage();
+        }
+    }
+    protected void armMove(double leftStickX){
+        armMotor.setPower(leftStickX);
     }
 
     @Override
