@@ -106,6 +106,8 @@ public class StarterAuto extends LinearOpMode {
     public DcMotorEx deadLeft;
 
     public DcMotorEx deadRight;
+    public DcMotor armMotor;
+    public DcMotor stringMotor;
     public ColorSensor colorFR;
     public ColorSensor colorFL;
     public ColorSensor colorBR;
@@ -397,6 +399,29 @@ public class StarterAuto extends LinearOpMode {
         setPower(backRight, 0, "backRight");
         setPower(frontLeft, 0, "frontLeft");
         setPower(frontRight, 0, "frontRight");
+    }
+
+    protected void stringMove(double rightTrigger, double leftTrigger) {
+        if (rightTrigger > 0) {
+//            if (stringpot.getVoltage() <= VOLTSSTRINGUP) {
+//                stringMotor.setPower(0);
+//                stringPotLastVal = stringpot.getVoltage();
+//            } else {
+                stringMotor.setPower(-rightTrigger);
+//                stringPotLastVal = stringpot.getVoltage();
+
+        } else if (leftTrigger > 0) {
+//            if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
+//                stringMotor.setPower(0);
+//                stringPotLastVal = stringpot.getVoltage();
+//
+//            } else {
+            stringMotor.setPower(leftTrigger);
+//                stringPotLastVal = stringpot.getVoltage();
+        }
+    }
+    protected void armMove(double leftStickX){
+        armMotor.setPower(leftStickX);
     }
 
     @Override
