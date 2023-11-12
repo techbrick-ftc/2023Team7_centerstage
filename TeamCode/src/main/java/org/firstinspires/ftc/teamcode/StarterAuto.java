@@ -267,6 +267,7 @@ public class StarterAuto extends LinearOpMode {
             done = driveToPointAsync(target, slowDown);
         }
     }
+
     protected void motorsStop() {
         backRight.setPower(0);
         backLeft.setPower(0);
