@@ -400,6 +400,40 @@ public class StarterAuto extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        protected void imuAngle () {
+            telemetry.addData("IMU Angle", getCurrentPose().angle);
+            telemetry.update();
+
+            TelemetryPacket packet = new TelemetryPacket();
+            packet.put("IMU Angle", getCurrentPose().angle);
+            dashboard.sendTelemetryPacket(packet);
+        }
+
+        protected void stringMove ( double rightTrigger, double leftTrigger){
+            if (rightTrigger > 0) {
+//            if (stringpot.getVoltage() <= VOLTSSTRINGUP) {
+//                stringMotor.setPower(0);
+//                stringPotLastVal = stringpot.getVoltage();
+//            } else {
+                stringMotor.setPower(-rightTrigger);
+//                stringPotLastVal = stringpot.getVoltage();
+
+            } else if (leftTrigger > 0) {
+//            if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
+//                stringMotor.setPower(0);
+//                stringPotLastVal = stringpot.getVoltage();
+//
+//            } else {
+                stringMotor.setPower(leftTrigger);
+//                stringPotLastVal = stringpot.getVoltage();
+            }
+        }
+        protected void armMove ( double leftStickX){
+            armMotor.setPower(leftStickX);
+        }
+//comment
+        @Override
+        public void runOpMode () {
 
     }
 }
