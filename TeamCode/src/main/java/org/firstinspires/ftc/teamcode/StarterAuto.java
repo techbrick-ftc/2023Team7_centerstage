@@ -397,9 +397,6 @@ public class StarterAuto extends LinearOpMode {
         setPower(frontLeft, 0, "frontLeft");
         setPower(frontRight, 0, "frontRight");
     }
-
-    @Override
-    public void runOpMode() {
         protected void imuAngle () {
             telemetry.addData("IMU Angle", getCurrentPose().angle);
             telemetry.update();
@@ -434,6 +431,5 @@ public class StarterAuto extends LinearOpMode {
 //comment
         @Override
         public void runOpMode () {
-
     }
 }
