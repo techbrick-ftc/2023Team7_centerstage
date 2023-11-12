@@ -37,8 +37,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-@Autonomous(name = "ticks")
-public class AutoDrive extends StarterAuto {
+@Autonomous(name = "TestAngular")
+public class TestAngular extends StarterAuto {
 
 
     @Override
@@ -47,24 +47,11 @@ public class AutoDrive extends StarterAuto {
         initialize(new Pose(0,0,0));
         waitForStart();
         zeroAngle = getCurrentPose().angle;
-        long currentTime = System.nanoTime();
-        long previousTime = System.nanoTime();
         boolean done = false;
 
         while(opModeIsActive() && !done) {
-            asyncPositionCorrector();
-            driveToPoint(new Pose(0,50,0),true);
-
-//            packet.put("Field Pose",fieldPose);
-//            packet.put("velocity Pose",velocityPose.angle);
-//            dashboard.sendTelemetryPacket(packet);
-        }
-        done = false;
-        while(opModeIsActive()&& !done){
-            asyncPositionCorrector();
-            //done = driveToPoint(new Pose(96,48,0),true);
+            testAngular();
         }
         //turnRobot(Math.PI/2);
     }
-    }
-
+}

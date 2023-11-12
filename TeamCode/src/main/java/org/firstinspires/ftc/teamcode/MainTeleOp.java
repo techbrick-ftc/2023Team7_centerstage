@@ -21,7 +21,7 @@ public class MainTeleOp extends StarterAuto {
     @Override
     public void runOpMode() {
         TelemetryPacket packet = new TelemetryPacket();
-        initialize();
+        initialize(new Pose(0,0,0));
         double zeroAngle = 0;
         boolean speedMod = true;
         boolean fieldCentric = true;
