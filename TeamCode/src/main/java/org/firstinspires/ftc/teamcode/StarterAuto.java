@@ -218,7 +218,6 @@ public class StarterAuto extends LinearOpMode {
     }
 
     public boolean driveToPointAsync(Pose target, boolean slowDown) {
-    public boolean driveToPoint(Pose target, boolean slowDown) {
         // when rotating motors commit to wrong direction, is the issue
         TelemetryPacket packet = new TelemetryPacket();
         Pose cur = fieldPose; // our current poe
@@ -261,159 +260,157 @@ public class StarterAuto extends LinearOpMode {
             return false;
         }
     }
-
-    void driveToPoint(Pose target, boolean slowDown) {
-        boolean done = false;
-        while(!done && opModeIsActive()){
-            done = driveToPointAsync(target, slowDown);
-        }
-    }
-    protected void motorsStop() {
-        backRight.setPower(0);
-        backLeft.setPower(0);
-        frontLeft.setPower(0);
-        frontRight.setPower(0);
-    }
-
-    protected double deceleration(boolean slow, double rotX, double rotY, double angleDiff) {
-        boolean slowDown = slow;
-        double angleConstant = .1 / (10 * (Math.PI * 2) / 360);
-        double d = Math.sqrt(((rotX * rotX) + (rotY * rotY)));// + Math.abs(angleDiff * angleConstant); Accounting for angle with distance
-        double powerLinear = 0;
-
-
-        if ((d <= stopDecel)) {
-            return 0;
-        }
-        if (slowDown) {
-            if (d < startDecel) {
-                powerLinear = (((1 - minimumPower) / (startDecel - stopDecel)) * (d - stopDecel) + minimumPower);
-                //will want to change velocityRatio to a real algorithm
-                double velocityRatio = (Math.sqrt((velocityPose.x * velocityPose.x) + (velocityPose.y * velocityPose.y)) / maxVelocity);
-                double finalPower = powerLinear - velocityRatio;
-                return finalPower;
+        void driveToPoint (Pose target,boolean slowDown){
+            boolean done = false;
+            while (!done && opModeIsActive()) {
+                done = driveToPointAsync(target, slowDown);
             }
+        }
+        protected void motorsStop () {
+            backRight.setPower(0);
+            backLeft.setPower(0);
+            frontLeft.setPower(0);
+            frontRight.setPower(0);
+        }
+
+        protected double deceleration ( boolean slow, double rotX, double rotY, double angleDiff){
+            boolean slowDown = slow;
+            double angleConstant = .1 / (10 * (Math.PI * 2) / 360);
+            double d = Math.sqrt(((rotX * rotX) + (rotY * rotY)));// + Math.abs(angleDiff * angleConstant); Accounting for angle with distance
+            double powerLinear = 0;
+
+
+            if ((d <= stopDecel)) {
+                return 0;
+            }
+            if (slowDown) {
+                if (d < startDecel) {
+                    powerLinear = (((1 - minimumPower) / (startDecel - stopDecel)) * (d - stopDecel) + minimumPower);
+                    //will want to change velocityRatio to a real algorithm
+                    double velocityRatio = (Math.sqrt((velocityPose.x * velocityPose.x) + (velocityPose.y * velocityPose.y)) / maxVelocity);
+                    double finalPower = powerLinear - velocityRatio;
+                    return finalPower;
+                }
 //           else if (targetspeed - speed > 0.02) {
 //                //Motors would get faster
 //                return 1;
-            //  }
-            else {
-                //Speed is normal
-                return 1;
+                //  }
+                else {
+                    //Speed is normal
+                    return 1;
+                }
+            } else if (d < .5) {
+                return 0;
+
+            } else if (d < 6) {
+                return .5;
             }
-        } else if (d < .5) {
-            return 0;
 
-        }
-        else if(d < 6){
-            return .5;
+            return 1;
         }
 
-        return 1;
-    }
 
+        private double wrap ( double theta){
+            double newTheta = theta;
+            while (Math.abs(newTheta) > Math.PI) {
+                if (newTheta < -Math.PI) {
+                    newTheta += Math.PI * 2;
+                } else {
+                    newTheta -= Math.PI * 2;
+                }
+            }
+            return newTheta;
+        }
 
-    private double wrap(double theta) {
-        double newTheta = theta;
-        while (Math.abs(newTheta) > Math.PI) {
-            if (newTheta < -Math.PI) {
-                newTheta += Math.PI * 2;
-            } else {
+        private double positiveWrap ( double theta){
+            double newTheta = theta;
+            while (newTheta > Math.PI * 2) {
                 newTheta -= Math.PI * 2;
             }
-        }
-        return newTheta;
-    }
-
-    private double positiveWrap(double theta) {
-        double newTheta = theta;
-        while (newTheta > Math.PI * 2) {
-            newTheta -= Math.PI * 2;
-        }
-        while (newTheta < 0) {
-            newTheta += Math.PI * 2;
-        }
-        return newTheta;
-    }
-
-
-    protected void initialize(Pose inputPose) {
-        //Hardware map does not line up with names, may want to change this.
-        frontLeft = hardwareMap.get(DcMotor.class, "backRight");
-        backLeft = hardwareMap.get(DcMotor.class, "frontRight");
-        frontRight = hardwareMap.get(DcMotor.class, "backLeft");
-        backRight = hardwareMap.get(DcMotor.class, "frontLeft");
-
-
-        deadLeft = hardwareMap.get(DcMotorEx.class, "par1");
-        deadRight = hardwareMap.get(DcMotorEx.class, "par0");
-        deadPerp = hardwareMap.get(DcMotorEx.class, "perp");
-        deadLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        deadRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        deadPerp.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        deadPerp.setDirection(DcMotorSimple.Direction.REVERSE);
-        deadLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-
-
-        colorFR = hardwareMap.colorSensor.get("colorFR");
-        colorFL = hardwareMap.colorSensor.get("colorFL");
-        colorBR = hardwareMap.colorSensor.get("colorBR");
-        colorBL = hardwareMap.colorSensor.get("colorBL");
-
-
-        imu = hardwareMap.get(IMU.class, "imu");
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        telemetry.update();
-
-        fieldPose = inputPose;
-        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.DOWN, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
-        zeroAngle = (imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle - zeroAngle) - inputPose.angle;
-    }
-
-
-    void turnRobot(double angle) {
-        double difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
-        double directionalSpeed = Math.signum(difAngle) * 0.5;
-        while (opModeIsActive() && !((difAngle) < Math.toRadians(2))) {
-            asyncPositionCorrector();
-            if (Math.abs(difAngle) < 0.05 * Math.PI) {
-                directionalSpeed *= 0.3;
-            } else if (Math.abs(difAngle) < 0.1 * Math.PI) {
-                directionalSpeed *= 0.5;
+            while (newTheta < 0) {
+                newTheta += Math.PI * 2;
             }
-            difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
-
-
-            setPower(backLeft, directionalSpeed, "backLeft");
-            setPower(backRight, -directionalSpeed, "backRight");
-            setPower(frontLeft, directionalSpeed, "frontLeft");
-            setPower(frontRight, -directionalSpeed, "frontRight");
-
+            return newTheta;
         }
 
-        setPower(backLeft, 0, "backLeft");
-        setPower(backRight, 0, "backRight");
-        setPower(frontLeft, 0, "frontLeft");
-        setPower(frontRight, 0, "frontRight");
-    }
 
-    protected void imuAngle() {
-        telemetry.addData("IMU Angle", getCurrentPose().angle);
-        telemetry.update();
+        protected void initialize (Pose inputPose){
+            //Hardware map does not line up with names, may want to change this.
+            frontLeft = hardwareMap.get(DcMotor.class, "backRight");
+            backLeft = hardwareMap.get(DcMotor.class, "frontRight");
+            frontRight = hardwareMap.get(DcMotor.class, "backLeft");
+            backRight = hardwareMap.get(DcMotor.class, "frontLeft");
 
-        TelemetryPacket packet = new TelemetryPacket();
-        packet.put("IMU Angle", getCurrentPose().angle);
-        dashboard.sendTelemetryPacket(packet);
-    }
 
-    protected void stringMove(double rightTrigger, double leftTrigger) {
-        if (rightTrigger > 0) {
+            deadLeft = hardwareMap.get(DcMotorEx.class, "par1");
+            deadRight = hardwareMap.get(DcMotorEx.class, "par0");
+            deadPerp = hardwareMap.get(DcMotorEx.class, "perp");
+            deadLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            deadRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            deadPerp.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            deadPerp.setDirection(DcMotorSimple.Direction.REVERSE);
+            deadLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+
+            colorFR = hardwareMap.colorSensor.get("colorFR");
+            colorFL = hardwareMap.colorSensor.get("colorFL");
+            colorBR = hardwareMap.colorSensor.get("colorBR");
+            colorBL = hardwareMap.colorSensor.get("colorBL");
+
+
+            imu = hardwareMap.get(IMU.class, "imu");
+            backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+            backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+
+            telemetry.update();
+
+            fieldPose = inputPose;
+            imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.DOWN, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
+            zeroAngle = (imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle - zeroAngle) - inputPose.angle;
+        }
+
+
+        void turnRobot ( double angle){
+            double difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
+            double directionalSpeed = Math.signum(difAngle) * 0.5;
+            while (opModeIsActive() && !((difAngle) < Math.toRadians(2))) {
+                asyncPositionCorrector();
+                if (Math.abs(difAngle) < 0.05 * Math.PI) {
+                    directionalSpeed *= 0.3;
+                } else if (Math.abs(difAngle) < 0.1 * Math.PI) {
+                    directionalSpeed *= 0.5;
+                }
+                difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
+
+
+                setPower(backLeft, directionalSpeed, "backLeft");
+                setPower(backRight, -directionalSpeed, "backRight");
+                setPower(frontLeft, directionalSpeed, "frontLeft");
+                setPower(frontRight, -directionalSpeed, "frontRight");
+
+            }
+
+            setPower(backLeft, 0, "backLeft");
+            setPower(backRight, 0, "backRight");
+            setPower(frontLeft, 0, "frontLeft");
+            setPower(frontRight, 0, "frontRight");
+        }
+
+        protected void imuAngle () {
+            telemetry.addData("IMU Angle", getCurrentPose().angle);
+            telemetry.update();
+
+            TelemetryPacket packet = new TelemetryPacket();
+            packet.put("IMU Angle", getCurrentPose().angle);
+            dashboard.sendTelemetryPacket(packet);
+        }
+
+        protected void stringMove ( double rightTrigger, double leftTrigger){
+            if (rightTrigger > 0) {
 //            if (stringpot.getVoltage() <= VOLTSSTRINGUP) {
 //                stringMotor.setPower(0);
 //                stringPotLastVal = stringpot.getVoltage();
@@ -421,22 +418,22 @@ public class StarterAuto extends LinearOpMode {
                 stringMotor.setPower(-rightTrigger);
 //                stringPotLastVal = stringpot.getVoltage();
 
-        } else if (leftTrigger > 0) {
+            } else if (leftTrigger > 0) {
 //            if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
 //                stringMotor.setPower(0);
 //                stringPotLastVal = stringpot.getVoltage();
 //
 //            } else {
-            stringMotor.setPower(leftTrigger);
+                stringMotor.setPower(leftTrigger);
 //                stringPotLastVal = stringpot.getVoltage();
+            }
+        }
+        protected void armMove ( double leftStickX){
+            armMotor.setPower(leftStickX);
+        }
+
+        @Override
+        public void runOpMode () {
+
         }
     }
-    protected void armMove(double leftStickX){
-        armMotor.setPower(leftStickX);
-    }
-
-    @Override
-    public void runOpMode() {
-
-    }
-}
