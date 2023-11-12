@@ -431,7 +431,7 @@ public class StarterAuto extends LinearOpMode {
         protected void armMove ( double leftStickX){
             armMotor.setPower(leftStickX);
         }
-
+//comment
         @Override
         public void runOpMode () {
 
