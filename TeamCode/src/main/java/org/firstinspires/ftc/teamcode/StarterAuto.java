@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -73,6 +74,7 @@ class Pose {
 
     public double angle;
 
+    @NonNull
     public String toString() {
         return "Pose(X = " + x + ", Y = " + y + ", Angle in Radians = " + angle + ", Angle in Degrees = " + Math.toDegrees(angle) + ")";
     }
@@ -165,8 +167,7 @@ public class StarterAuto extends LinearOpMode {
 
     Pose getCurrentPose() {
         double y = (deadLeft.getCurrentPosition() * inPerTick + deadRight.getCurrentPosition() * inPerTick) / 2;
-        Pose current = new Pose(deadPerp.getCurrentPosition() * inPerTick, y, (imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle - zeroAngle));
-        return current;
+        return new Pose(deadPerp.getCurrentPosition() * inPerTick, y, (imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle - zeroAngle));
     }
 
     public void setPower(DcMotor motor, double targetPower, String name) {
@@ -255,13 +256,13 @@ public class StarterAuto extends LinearOpMode {
         dashboard.sendTelemetryPacket(packet);
         if (multiplier == 0) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     void driveToPoint(Pose target, boolean slowDown) {
         boolean done = false;
+        asyncPositionCorrector();
         while(!done && opModeIsActive()){
             done = driveToPointAsync(target, slowDown);
         }
@@ -277,7 +278,6 @@ public class StarterAuto extends LinearOpMode {
         boolean slowDown = slow;
         double angleConstant = .1 / (10 * (Math.PI * 2) / 360);
         double d = Math.sqrt(((rotX * rotX) + (rotY * rotY)));// + Math.abs(angleDiff * angleConstant); Accounting for angle with distance
-        double powerLinear = 0;
 
 
         if ((d <= stopDecel)) {
@@ -285,11 +285,10 @@ public class StarterAuto extends LinearOpMode {
         }
         if (slowDown) {
             if (d < startDecel) {
-                powerLinear = (((1 - minimumPower) / (startDecel - stopDecel)) * (d - stopDecel) + minimumPower);
+                double powerLinear = (((1 - minimumPower) / (startDecel - stopDecel)) * (d - stopDecel) + minimumPower);
                 //will want to change velocityRatio to a real algorithm
                 double velocityRatio = (Math.sqrt((velocityPose.x * velocityPose.x) + (velocityPose.y * velocityPose.y)) / maxVelocity);
-                double finalPower = powerLinear - velocityRatio;
-                return finalPower;
+                return (powerLinear - velocityRatio);
             }
 //           else if (targetspeed - speed > 0.02) {
 //                //Motors would get faster
