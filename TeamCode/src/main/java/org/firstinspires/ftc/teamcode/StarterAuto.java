@@ -96,9 +96,13 @@ public class StarterAuto extends LinearOpMode {
     final float THRESHOLD_HIGH_DECIMATION_RANGE_METERS = 1.0f;
     final int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
     public final FtcDashboard dashboard = FtcDashboard.getInstance();
+    //Yellow and Control Port 3
     public DcMotor frontLeft;
+    //Green Control Port 0
     public DcMotor backLeft;
+    //Red and Control Port 2
     public DcMotor frontRight;
+    //White Control Port 1
     public DcMotor backRight;
     public IMU imu;
     public DcMotorEx deadPerp;
@@ -106,8 +110,18 @@ public class StarterAuto extends LinearOpMode {
     public DcMotorEx deadLeft;
 
     public DcMotorEx deadRight;
+    //Ex Hub port 2
     public DcMotor armMotor;
+    //Ex Hub port 3
     public DcMotor stringMotor;
+    //Ex Hub port 0
+    public DcMotor lifterMotor;
+    //Ex Hub port 1
+    public DcMotor intakeMotor;
+    //Control Hub Port 0
+    public Servo armFlipper;
+    //Control Hub port 1
+    public Servo finger;
     public ColorSensor colorFR;
     public ColorSensor colorFL;
     public ColorSensor colorBR;
@@ -336,10 +350,10 @@ public class StarterAuto extends LinearOpMode {
 
         protected void initialize (Pose inputPose){
             //Hardware map does not line up with names, may want to change this.
-            frontLeft = hardwareMap.get(DcMotor.class, "backRight");
-            backLeft = hardwareMap.get(DcMotor.class, "frontRight");
-            frontRight = hardwareMap.get(DcMotor.class, "backLeft");
-            backRight = hardwareMap.get(DcMotor.class, "frontLeft");
+            frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+            backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+            frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+            backRight = hardwareMap.get(DcMotor.class, "backRight");
 
 
             deadLeft = hardwareMap.get(DcMotorEx.class, "par1");
@@ -356,7 +370,8 @@ public class StarterAuto extends LinearOpMode {
             colorFL = hardwareMap.colorSensor.get("colorFL");
             colorBR = hardwareMap.colorSensor.get("colorBR");
             colorBL = hardwareMap.colorSensor.get("colorBL");
-
+            armFlipper = hardwareMap.servo.get("armFlipper");
+            finger = hardwareMap.servo.get("finger");
 
             imu = hardwareMap.get(IMU.class, "imu");
             backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -430,6 +445,15 @@ public class StarterAuto extends LinearOpMode {
         }
         protected void armMove ( double leftStickX){
             armMotor.setPower(leftStickX);
+        }
+        protected void lift(boolean DpadUpPressed,boolean previousDpadUpPressed, boolean DpadDownPressed, boolean previousDpadDownPressed){
+            while(DpadUpPressed && previousDpadUpPressed){
+                lifterMotor.setPower(1);
+            }
+            while(DpadDownPressed && previousDpadDownPressed){
+                lifterMotor.setPower(-1);
+            }
+            lifterMotor.setPower(0);
         }
 //comment #2
         @Override
