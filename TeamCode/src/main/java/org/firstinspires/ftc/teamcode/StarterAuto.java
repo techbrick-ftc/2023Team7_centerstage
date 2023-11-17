@@ -124,6 +124,9 @@ public class StarterAuto extends LinearOpMode {
     public Servo armFlipper;
     //Control Hub port 1
     public Servo finger;
+    int[] servoPositions = {0,-45,-90};
+    int currentPosition = 2;
+    String increasingPosition = "increase";
     public ColorSensor colorFR;
     public ColorSensor colorFL;
     public ColorSensor colorBR;
@@ -371,7 +374,7 @@ public class StarterAuto extends LinearOpMode {
             colorBL = hardwareMap.colorSensor.get("colorBL");
             armFlipper = hardwareMap.servo.get("armFlipper");
             finger = hardwareMap.servo.get("finger");
-
+            setFinger(servoPositions[2]);
             imu = hardwareMap.get(IMU.class, "imu");
             backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -453,6 +456,9 @@ public class StarterAuto extends LinearOpMode {
                 lifterMotor.setPower(-1);
             }
             lifterMotor.setPower(0);
+        }
+        protected void setFinger(double degree){
+            finger.setPosition(degree);
         }
 //comment #2
         @Override
