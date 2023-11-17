@@ -106,6 +106,10 @@ public class StarterAuto extends LinearOpMode {
     public DcMotor frontRight;
     //White Control Port 1
     public DcMotor backRight;
+
+    public DcMotor armMotor;
+
+    public DcMotor stringMotor;
     public IMU imu;
     public DcMotorEx deadPerp;
 

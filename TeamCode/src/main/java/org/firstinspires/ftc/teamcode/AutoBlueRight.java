@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.opencv.core.Point;
 
 @Autonomous(name = "ticks")
-public class AutoDrive extends StarterAuto {
+public class AutoBlueRight extends StarterAuto {
 
 
     @Override
@@ -34,53 +34,54 @@ public class AutoDrive extends StarterAuto {
         // detect the colour (positions are estimates)
         //robot is about 16 inches long
         if (colorDetector.location == Location.CENTER) {
-            while(driveToPointAsync(new Pose(-36,-30,0),true)){
+            while(driveToPointAsync(new Pose(-36,30,0),true)){
                 asyncPositionCorrector();
             }
-            while(driveToPointAsync(new Pose(-36,-45 ,0),true)){
+            //release
+            while(driveToPointAsync(new Pose(-36,45 ,0),true)){
                 asyncPositionCorrector();
             }
-            while(driveToPointAsync(new Pose(-56,-12,0),true)){
+            while(driveToPointAsync(new Pose(-56,12,0),true)){
                 asyncPositionCorrector();
             }
-            while(driveToPointAsync(new Pose(60,-12,0),true)){
+            while(driveToPointAsync(new Pose(60,12,0),true)){
                 asyncPositionCorrector();
             }
 
             // rotate and then move or spline under gate past E towards center of backdrop
         }
-        else if (colorDetector.location == Location.LEFT) {
-            while(driveToPointAsync(new Pose(-48,-40,0),true)){
+        else if (colorDetector.location == Location.RIGHT) {
+            while(driveToPointAsync(new Pose(-48,40,0),true)){
                 asyncPositionCorrector();
             }
             //release pixel
-            while(driveToPointAsync(new Pose(-60,-40,0),true)){
+            while(driveToPointAsync(new Pose(-60,40,0),true)){
                 asyncPositionCorrector();
             }
-            while(driveToPointAsync(new Pose(-60,-12,0),true)){
+            while(driveToPointAsync(new Pose(-60,12,0),true)){
                 asyncPositionCorrector();
             }
-            while(driveToPointAsync(new Pose(60,-12,0),true)){
+            while(driveToPointAsync(new Pose(60,12,0),true)){
                 asyncPositionCorrector();
             }
 
 
         }
-        else{ //right, (-27, -45)
-            while(driveToPointAsync(new Pose(-36,-40,0),true)){
+        else{ //left, (-27, -45)
+            while(driveToPointAsync(new Pose(-36,40,0),true)){
                 asyncPositionCorrector();
             }
-            while(driveToPointAsync(new Pose(-24,-40,0),true)){
+            while(driveToPointAsync(new Pose(-24,40,0),true)){
                 asyncPositionCorrector();
             }
             //release pixel
-            while(driveToPointAsync(new Pose(-36,-40,0),true)){
+            while(driveToPointAsync(new Pose(-36,40,0),true)){
                 asyncPositionCorrector();
             }
-            while(driveToPointAsync(new Pose(-36,-12,0),true)){
+            while(driveToPointAsync(new Pose(-36,12,0),true)){
                 asyncPositionCorrector();
             }
-            while(driveToPointAsync(new Pose(60,-12,0),true)){
+            while(driveToPointAsync(new Pose(60,12,0),true)){
                 asyncPositionCorrector();
             }
         }
@@ -97,5 +98,5 @@ public class AutoDrive extends StarterAuto {
         }
         //turnRobot(Math.PI/2);
     }
-    }
+}
 

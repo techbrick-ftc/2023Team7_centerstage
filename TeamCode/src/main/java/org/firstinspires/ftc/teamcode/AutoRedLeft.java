@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.opencv.core.Point;
 
 @Autonomous(name = "ticks")
-public class AutoDrive extends StarterAuto {
+public class AutoRedLeft extends StarterAuto {
 
 
     @Override
@@ -37,6 +37,7 @@ public class AutoDrive extends StarterAuto {
             while(driveToPointAsync(new Pose(-36,-30,0),true)){
                 asyncPositionCorrector();
             }
+            //release
             while(driveToPointAsync(new Pose(-36,-45 ,0),true)){
                 asyncPositionCorrector();
             }
@@ -97,5 +98,5 @@ public class AutoDrive extends StarterAuto {
         }
         //turnRobot(Math.PI/2);
     }
-    }
+}
 
