@@ -66,6 +66,8 @@ public class MainTeleOp extends StarterAuto {
             boolean armB = cur2.b;
             boolean armX = cur2.x;
             boolean armY = cur2.y;
+            boolean armDpadUp = cur2.dpad_up;
+            boolean armDpadDown = cur2.dpad_down;
             boolean previousDriveA = previousGamepad1.a;
             boolean previousDriveB = previousGamepad1.b;
             boolean previousDriveX = previousGamepad1.x;
@@ -74,6 +76,8 @@ public class MainTeleOp extends StarterAuto {
             boolean previousArmB = previousGamepad2.b;
             boolean previousArmX = previousGamepad2.x;
             boolean previousArmY = previousGamepad2.y;
+            boolean previousDpadUp = previousGamepad2.dpad_up;
+            boolean previousDpadDown = previousGamepad2.dpad_down;
             Pose current = getCurrentPose();
             if (!speedMod) {
                 driveYleftStick = Range.clip(-gamepad1.left_stick_y, -0.4, 0.4);
@@ -108,7 +112,31 @@ public class MainTeleOp extends StarterAuto {
                 stringMove(armRightTrigger,armLeftTrigger);
             }
             //Moves the servo
-
+            if((armDpadUp || previousDpadUp || armDpadDown || previousDpadDown)){
+                lift(armDpadUp,previousDpadUp,armDpadDown,previousDpadDown);
+            }
+            if(armA && !previousArmA){
+                if(currentPosition == 2){
+                    setFinger(servoPositions[1]);
+                    currentPosition = 1;
+                    increasingPosition = "decreasing";
+                }
+                else if(currentPosition==1){
+                    if(increasingPosition.equals("increasing")){
+                        setFinger(servoPositions[2]);
+                        currentPosition = 2;
+                    }
+                    else{
+                        setFinger(servoPositions[0]);
+                        currentPosition = 0;
+                    }
+                }
+                else{
+                    setFinger(servoPositions[1]);
+                    currentPosition = 1;
+                    increasingPosition="increasing";
+                }
+            }
 
 
 
