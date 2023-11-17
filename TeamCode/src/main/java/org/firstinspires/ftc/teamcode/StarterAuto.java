@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import androidx.annotation.NonNull;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -74,7 +72,6 @@ class Pose {
 
     public double angle;
 
-    @NonNull
     public String toString() {
         return "Pose(X = " + x + ", Y = " + y + ", Angle in Radians = " + angle + ", Angle in Degrees = " + Math.toDegrees(angle) + ")";
     }
@@ -107,9 +104,6 @@ public class StarterAuto extends LinearOpMode {
     //White Control Port 1
     public DcMotor backRight;
 
-    public DcMotor armMotor;
-
-    public DcMotor stringMotor;
     public IMU imu;
     public DcMotorEx deadPerp;
 
