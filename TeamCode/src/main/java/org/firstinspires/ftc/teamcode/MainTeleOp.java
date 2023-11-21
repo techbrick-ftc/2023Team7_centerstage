@@ -53,8 +53,10 @@ public class MainTeleOp extends StarterAuto {
             telemetry.update();
             double driveYleftStick = -gamepad1.left_stick_y; // Remember, this is reversed!
             double driveXleftStick = gamepad1.left_stick_x; // Counteract imperfect strafing
-            double armYleftStick = -gamepad1.left_stick_y; // Remember, this is reversed!
-            double armXleftStick = gamepad1.left_stick_x; // Counteract imperfect strafing
+            double armYleftStick = -gamepad2.left_stick_y; // Remember, this is reversed!
+            double armXleftStick = gamepad2.left_stick_x; // Counteract imperfect strafing
+            double armYrightStick = -gamepad2.right_stick_y;
+            double armXrightStick = gamepad2.right_stick_x;
             rx = gamepad1.right_stick_x;
             double armRightTrigger = gamepad2.right_trigger;
             double armLeftTrigger = gamepad2.left_trigger;
@@ -137,7 +139,9 @@ public class MainTeleOp extends StarterAuto {
                     increasingPosition="increasing";
                 }
             }
-
+            if(armYrightStick>0.1 || armYrightStick<0.1){
+                flipArm(armYrightStick);
+            }
 
 
             packet.put("rotatex", rotX);

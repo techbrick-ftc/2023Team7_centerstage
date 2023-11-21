@@ -120,11 +120,12 @@ public class StarterAuto extends LinearOpMode {
     public DcMotor intakeMotor;
     //Control Hub Port 0
     public Servo armFlipper;
+    double flipperPosition = 0;
     //Control Hub port 1
     public Servo finger;
     int[] servoPositions = {0,-45,-90};
     int currentPosition = 2;
-    String increasingPosition = "increase";
+    String increasingPosition = "increasing";
     public ColorSensor colorFR;
     public ColorSensor colorFL;
     public ColorSensor colorBR;
@@ -458,8 +459,32 @@ public class StarterAuto extends LinearOpMode {
             }
             lifterMotor.setPower(0);
         }
-        protected void setFinger(double degree){
+        protected void setFinger(int degree){
             finger.setPosition(degree);
+        }
+
+        protected void flipArm(double rightStickY){
+        double flipperConstant = 10;
+            if(flipperPosition<2){
+                if(rightStickY<0.1){
+                    armFlipper.setPosition(flipperPosition);
+                }
+                else if(rightStickY>0.1){
+                    armFlipper.setPosition(flipperPosition+=rightStickY*flipperConstant);
+                }
+
+            }
+            else if(flipperPosition>178){
+                if(rightStickY>0.1){
+                    armFlipper.setPosition(flipperPosition);
+                }
+                else if(rightStickY<0.1){
+                    armFlipper.setPosition(flipperPosition+=rightStickY*flipperConstant);
+                }
+            }
+            else{
+                armFlipper.setPosition(flipperPosition+=rightStickY*flipperConstant);
+            }
         }
 //comment #2
         @Override
