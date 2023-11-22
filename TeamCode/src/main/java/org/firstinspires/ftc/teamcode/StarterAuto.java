@@ -79,6 +79,8 @@ class Pose {
 
 public class StarterAuto extends LinearOpMode {
 
+    final double VOLTSSTRINGUP = 0.770;
+    final double VOLTSSTRINGDOWN = 2.609;// fiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiind!
     double lastTime;
     double startDecel = 30;
 
@@ -132,7 +134,9 @@ public class StarterAuto extends LinearOpMode {
     public ColorSensor colorBL;
     public TouchSensor armuptouch;
 
-//    public AnalogInput armpot;
+    public AnalogInput armPot; //analog 0 control hub
+
+    public AnalogInput stringPot; //analog 2 control hub
 
     double previousAngle = 0;
 
@@ -352,10 +356,17 @@ public class StarterAuto extends LinearOpMode {
 
     protected void initialize(Pose inputPose) {
             //Hardware map does not line up with names, may want to change this.
-            frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
-            backLeft = hardwareMap.get(DcMotor.class, "backLeft");
-            frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-            backRight = hardwareMap.get(DcMotor.class, "backRight");
+            frontLeft = hardwareMap.get(DcMotor.class, "frontLeft"); //3
+            backLeft = hardwareMap.get(DcMotor.class, "backLeft");//0
+            frontRight = hardwareMap.get(DcMotor.class, "frontRight");//2 control hub
+            backRight = hardwareMap.get(DcMotor.class, "backRight"); //1
+            lifterMotor = hardwareMap.get(DcMotorEx.class, "Lifter");//3E
+            intakeMotor = hardwareMap.get(DcMotor.class, "par0"); //1E
+            stringMotor = hardwareMap.get(DcMotor.class,"perp"); //0E
+            armMotor = hardwareMap.get(DcMotor.class,"par1");//E2
+            armPot = hardwareMap.get(AnalogInput.class,"shoulderPot"); //C0
+            stringPot = hardwareMap.get(AnalogInput.class,"stringPot"); //E2
+
 
 
         deadLeft = hardwareMap.get(DcMotorEx.class, "par1");
@@ -424,8 +435,27 @@ public class StarterAuto extends LinearOpMode {
             packet.put("IMU Angle", getCurrentPose().angle);
             dashboard.sendTelemetryPacket(packet);
         }
+    protected boolean stringAsync(double targetVolt) {
+        double power = Math.signum(targetVolt - stringPot.getVoltage());
+        if (Math.abs(stringPot.getVoltage() - targetVolt) <= 0.02) {
+            return true;
+        }
+        if (power == -1 && (stringPot.getVoltage() <= VOLTSSTRINGUP)) {
+        } else if (power == 1 && (stringPot.getVoltage() > VOLTSSTRINGDOWN)) {
+        } else {
+            if (Math.abs(stringPot.getVoltage() - targetVolt) < .05) {
+                power *= 0.5;
+            } else if (Math.abs(stringPot.getVoltage() - targetVolt) < .1) {
+                power *= 0.6;
+            }
+            power = Range.clip(power, -1, 1);
+            stringMotor.setPower(power);
+        }
+        return false;
+    }
 
-        protected void stringMove ( double rightTrigger, double leftTrigger){
+
+    protected void stringMove ( double rightTrigger, double leftTrigger){
             if (rightTrigger > 0) {
 //            if (stringpot.getVoltage() <= VOLTSSTRINGUP) {
 //                stringMotor.setPower(0);

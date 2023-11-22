@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.opencv.core.Point;
 
-@Autonomous(name = "ticks")
+@Autonomous(name = "AutoRedRight")
 public class AutoRedRight extends StarterAuto {
 
 
@@ -28,53 +28,53 @@ public class AutoRedRight extends StarterAuto {
         Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
 
 
-        ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
+        //ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
         waitForStart();
         // detect the colour (positions are estimates)
         //robot is about 16 inches long
-        if (colorDetector.location == Location.CENTER) {
-            while(driveToPointAsync(new Pose(36,-30,0),true)){
-                asyncPositionCorrector();
-            }
-            //release
-            while(driveToPointAsync(new Pose(36,-60 ,0),true)){
-                asyncPositionCorrector();
-            }
-            while(driveToPointAsync(new Pose(60,-60,0),true)){
-                asyncPositionCorrector();
-            }
-
-            // rotate and then move or spline under gate past E towards center of backdrop
-        }
-        else if (colorDetector.location == Location.LEFT) {
-            while(driveToPointAsync(new Pose(12,-36,0),true)){
-                asyncPositionCorrector();
-            }
-
-            while(driveToPointAsync(new Pose(0,-36,0),true)){
-                asyncPositionCorrector();
-            }
-            //release pixel
-            while(driveToPointAsync(new Pose(12,-36,0),true)){
-                asyncPositionCorrector();
-            }
-            while(driveToPointAsync(new Pose(60,-60,0),true)){
-                asyncPositionCorrector();
-            }
-
-
-        }
-        else{ //right, (-27, -45)
-
-            while(driveToPointAsync(new Pose(24,-36,0),true)){
-                asyncPositionCorrector();
-            }
-            //release
-            while(driveToPointAsync(new Pose(60,-60,0),true)){
-                asyncPositionCorrector();
-            }
-        }
+//        if (colorDetector.location == Location.CENTER) {
+//            while(driveToPointAsync(new Pose(36,-30,0),true)){
+//                asyncPositionCorrector();
+//            }
+//            //release
+//            while(driveToPointAsync(new Pose(36,-60 ,0),true)){
+//                asyncPositionCorrector();
+//            }
+//            while(driveToPointAsync(new Pose(60,-60,0),true)){
+//                asyncPositionCorrector();
+//            }
+//
+//            // rotate and then move or spline under gate past E towards center of backdrop
+//        }
+//        else if (colorDetector.location == Location.LEFT) {
+//            while(driveToPointAsync(new Pose(12,-36,0),true)){
+//                asyncPositionCorrector();
+//            }
+//
+//            while(driveToPointAsync(new Pose(0,-36,0),true)){
+//                asyncPositionCorrector();
+//            }
+//            //release pixel
+//            while(driveToPointAsync(new Pose(12,-36,0),true)){
+//                asyncPositionCorrector();
+//            }
+//            while(driveToPointAsync(new Pose(60,-60,0),true)){
+//                asyncPositionCorrector();
+//            }
+//
+//
+//        }
+//        else{ //right, (-27, -45)
+//
+//            while(driveToPointAsync(new Pose(24,-36,0),true)){
+//                asyncPositionCorrector();
+//            }
+//            //release
+//            while(driveToPointAsync(new Pose(60,-60,0),true)){
+//                asyncPositionCorrector();
+//            }
+//        }
 
         //while(opModeIsActive() && !done) {
 
