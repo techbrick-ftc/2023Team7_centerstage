@@ -90,7 +90,7 @@ public class MainTeleOp extends StarterAuto {
                 rx = Range.clip(gamepad1.right_stick_x, -0.75, 0.75);
             }
             // Read inverse IMU heading, as the IMU heading is CW positive
-            double botHeading = -(current.angle );
+            double botHeading = -(current.angle - zeroAngle);
             if (driveY) {
                 zeroAngle = current.angle;
             }
@@ -107,15 +107,36 @@ public class MainTeleOp extends StarterAuto {
             }
             //Moves the arm back and forth
             if(!(armXleftStick<0.05 && armXleftStick>-0.05)){
-                armMove(armXleftStick);
+                armMove(armXleftStick/4);
+            }
+            else{
+                armMotor.setPower(0);
             }
             //Moves the strings out and in
-            if((armRightTrigger<0.05)||(armLeftTrigger<0.05)){
-                stringMove(armRightTrigger,armLeftTrigger);
+            if((armRightTrigger>0.05)||(armLeftTrigger>0.05)){
+                if(armRightTrigger>0.05){
+                    stringAsync(stringPot.getVoltage()+.05);
+                }
+                else{
+                    stringAsync(stringPot.getVoltage()-0.05);
+                }
             }
+            else{
+                stringMotor.setPower(0);
+            }
+            packet.put("ArmPot",armPot.getVoltage());
             //Moves the servo
             if((armDpadUp || previousDpadUp || armDpadDown || previousDpadDown)){
                 lift(armDpadUp,previousDpadUp,armDpadDown,previousDpadDown);
+            }
+            if(armX && previousArmX){
+                intakeMotor.setPower(.5);
+            }
+            else if(armB && previousArmB){
+                intakeMotor.setPower(-.5);
+            }
+            else{
+                intakeMotor.setPower(0);
             }
             if(armA && !previousArmA){
                 if(currentPosition == 2){
@@ -139,8 +160,13 @@ public class MainTeleOp extends StarterAuto {
                     increasingPosition="increasing";
                 }
             }
-            if(armYrightStick>0.1 || armYrightStick<0.1){
-                flipArm(armYrightStick);
+            if(!armY&&previousArmY){
+                if(Math.abs(5-flipperPosition)<.05){
+                    setFlipperPosition(-1);
+                }
+                else{
+                    setFlipperPosition(1);
+                }
             }
 
 

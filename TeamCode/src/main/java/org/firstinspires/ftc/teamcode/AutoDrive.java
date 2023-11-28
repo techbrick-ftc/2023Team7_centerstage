@@ -13,7 +13,7 @@ public class AutoDrive extends StarterAuto {
     @Override
     public void runOpMode() {
 
-        initialize(new Pose(0,0,0));
+        initialize(new Pose(0, 0, 0));
         waitForStart();
         zeroAngle = getCurrentPose().angle;
         long currentTime = System.nanoTime();
@@ -35,21 +35,49 @@ public class AutoDrive extends StarterAuto {
 
         //while(opModeIsActive() && !done) {
 
-        lifterMotor.setPower(.2);
-
+        //frontLeft.setPower(1);
+        //frontRight.setPower(1);
+        //backLeft.setPower(1);
+        //backRight.setPower(1);
+        //intakeMotor.setPower(-.3);
 //            packet.put("velocity Pose",velocityPose.angle);
 
         //}
-        while(opModeIsActive()){
+//        done = armAsync(ARMROTATE0POSITION);
+//        while (opModeIsActive() && !done) {
+//            done = armAsync(ARMROTATE0POSITION);
+//        }
+////        done = stringAsync(1);
+////        while (opModeIsActive() && !done) {
+////            done = stringAsync(1);
+////        }
+//        while(!stringAsync(VOLTSSTRINGUP+.05)){
+//
+//        }
+        pixelPlaceAuto(Location.CENTER);
+        //stringMotor.setPower(.2);
+        while (opModeIsActive()) {
             asyncPositionCorrector();
             TelemetryPacket packet = new TelemetryPacket();
-            packet.put("String", stringPot.getVoltage());
-            packet.put("Arm", armPot.getVoltage());
-            packet.put("Field Pose",fieldPose);
-            dashboard.sendTelemetryPacket(packet);
-            //done = driveToPoint(new Pose(96,48,0),true);
+//            packet.put("String", stringPot.getVoltage());
+//            packet.put("Arm", armPot.getVoltage());
+            //while (driveToPointAsync(new Pose(-24, 96, 0), true)) {
+              // asyncPositionCorrector();
+            //}
+            //armFlipper.setPosition(-1); puts flipper up
+//          sleep(3000);
+//        intakeMotor.setPower(0);
+                packet.put("armpot",armPot.getVoltage());
+                packet.put("stringpot",stringPot.getVoltage());
+                packet.put("Field Pose", fieldPose);
+                dashboard.sendTelemetryPacket(packet);
+                //done = driveToPoint(new Pose(96,48,0),true);
+            //}
+            //turnRobot(Math.PI/2);
+//            boolean armDone = false;
+//            while (!armDone) {
+//                armDone = armAsync(ARMROTATE0POSITION, false, 0.5);
+//            }
         }
-        //turnRobot(Math.PI/2);
-    }
-    }
+    }}
 

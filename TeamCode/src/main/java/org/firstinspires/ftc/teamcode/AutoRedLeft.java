@@ -13,7 +13,7 @@ public class AutoRedLeft extends StarterAuto {
     @Override
     public void runOpMode() {
         TelemetryPacket packet = new TelemetryPacket();
-        initialize(new Pose(0,0,0));
+        initialize(new Pose(-36,-64,0));
         waitForStart();
         zeroAngle = getCurrentPose().angle;
         long currentTime = System.nanoTime();
@@ -29,74 +29,73 @@ public class AutoRedLeft extends StarterAuto {
 
 
         //ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
-        // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
+        // We wan to start the bot at x: -36, y: -60, heading: 0 (probably)
         waitForStart();
         // detect the colour (positions are estimates)
         //robot is about 16 inches long
-//        if (colorDetector.location == Location.CENTER) {
-//            while(driveToPointAsync(new Pose(-36,-30,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            //release
-//            while(driveToPointAsync(new Pose(-36,-45 ,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            while(driveToPointAsync(new Pose(-56,-12,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            while(driveToPointAsync(new Pose(60,-12,0),true)){
-//                asyncPositionCorrector();
-//            }
-//
-//            // rotate and then move or spline under gate past E towards center of backdrop
-//        }
-//        else if (colorDetector.location == Location.LEFT) {
-//            while(driveToPointAsync(new Pose(-48,-40,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            //release pixel
-//            while(driveToPointAsync(new Pose(-60,-40,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            while(driveToPointAsync(new Pose(-60,-12,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            while(driveToPointAsync(new Pose(60,-12,0),true)){
-//                asyncPositionCorrector();
-//            }
-//
-//
-//        }
-//        else{ //right, (-27, -45)
-//            while(driveToPointAsync(new Pose(-36,-40,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            while(driveToPointAsync(new Pose(-24,-40,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            //release pixel
-//            while(driveToPointAsync(new Pose(-36,-40,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            while(driveToPointAsync(new Pose(-36,-12,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            while(driveToPointAsync(new Pose(60,-12,0),true)){
-//                asyncPositionCorrector();
-//            }
-//        }
+        ///if (colorDetector.location == Location.CENTER) {
 
-        //while(opModeIsActive() && !done) {
 
-        packet.put("Field Pose",fieldPose);
-//            packet.put("velocity Pose",velocityPose.angle);
-//            dashboard.sendTelemetryPacket(packet);
-        //}
-        while(opModeIsActive()){
-            asyncPositionCorrector();
-            //done = driveToPoint(new Pose(96,48,0),true);
+
+            if(false){
+                while(!driveToPointAsync(new Pose(-36,-38,0),true)){
+                    asyncPositionCorrector();
+
+                }
+                releasePixel();
+                while(!driveToPointAsync(new Pose(-36,-39 ,0),true)){
+                    asyncPositionCorrector();
+                }
+                while(!driveToPointAsync(new Pose(-56,-45,0),true)){
+                    asyncPositionCorrector();
+                }
+                while(!driveToPointAsync(new Pose(-56,-11,0),true)){
+                    asyncPositionCorrector();
+                }
+                while(!driveToPointAsync(new Pose(60,-11,0),true)){
+                    asyncPositionCorrector();
+                }
+
+                // rotate and then move or spline under gate past E towards center of backdrop
+            }
+            //else if (colorDetector.location == Location.LEFT) {
+            else if(false){
+                while(!driveToPointAsync(new Pose(-48,-40,0),true)){
+                    asyncPositionCorrector();
+                }
+                releasePixel();
+                while(!driveToPointAsync(new Pose(-60,-40,0),true)){
+                    asyncPositionCorrector();
+                }
+                while(!driveToPointAsync(new Pose(-60,-12,0),true)){
+                    asyncPositionCorrector();
+                }
+                while(!driveToPointAsync(new Pose(60,-12,0),true)){
+                    asyncPositionCorrector();
+                }
+
+
+            }
+            else{ //right, (-27, -45)
+                while(!driveToPointAsync(new Pose(-36,-40,0),true)){
+                    asyncPositionCorrector();
+                }
+                while(!driveToPointAsync(new Pose(-24,-40,0),true)){
+                    asyncPositionCorrector();
+                }
+                releasePixel();
+                while(!driveToPointAsync(new Pose(-36,-40,0),true)){
+                    asyncPositionCorrector();
+                }
+                while(!driveToPointAsync(new Pose(-36,-12,0),true)){
+                    asyncPositionCorrector();
+                }
+                while(!driveToPointAsync(new Pose(60,-12,0),true)){
+                    asyncPositionCorrector();
+                }
+            }
         }
         //turnRobot(Math.PI/2);
     }
-}
+
 

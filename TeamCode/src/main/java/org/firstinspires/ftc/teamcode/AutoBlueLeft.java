@@ -13,7 +13,8 @@ public class AutoBlueLeft extends StarterAuto {
     @Override
     public void runOpMode() {
         TelemetryPacket packet = new TelemetryPacket();
-        initialize(new Pose(0,0,0));
+//        initialize(new Pose(12,60,Math.PI));
+        initialize(new Pose(12,64,Math.PI));
         waitForStart();
         zeroAngle = getCurrentPose().angle;
         long currentTime = System.nanoTime();
@@ -33,58 +34,64 @@ public class AutoBlueLeft extends StarterAuto {
         waitForStart();
         // detect the colour (positions are estimates)
         //robot is about 16 inches long
-      //  if (colorDetector.location == Location.CENTER) {
-            while(driveToPointAsync(new Pose(36,30,0),true)){
-                asyncPositionCorrector();
-            }
+//        if (colorDetector.location == Location.CENTER) {
+            if(true){
             //release
-            while(driveToPointAsync(new Pose(36,60 ,0),true)){
-                asyncPositionCorrector();
-            }
-            while(driveToPointAsync(new Pose(60,60,0),true)){
-                asyncPositionCorrector();
-            }
+                while (!driveToPointAsync(new Pose(12, 39, Math.PI), true)) {
+                    asyncPositionCorrector();
+                }
+                releasePixel();
+                while (!driveToPointAsync(new Pose(12, 63, Math.PI), true)) {
+                    asyncPositionCorrector();
+                }
+                while (!driveToPointAsync(new Pose(60, 63, Math.PI), true)) {
+                    asyncPositionCorrector();
+                }
 
             // rotate and then move or spline under gate past E towards center of backdrop
-    //    }
-       // else if (colorDetector.location == Location.RIGHT) {
-//            while(driveToPointAsync(new Pose(12,36,0),true)){
-//                asyncPositionCorrector();
-//            }
-//
-//            while(driveToPointAsync(new Pose(0,36,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            //release pixel
-//            while(driveToPointAsync(new Pose(12,36,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            while(driveToPointAsync(new Pose(60,60,0),true)){
-//                asyncPositionCorrector();
-//            }
-//
-//
-//        }
-//        else{ //left, (-27, -45)
-//
-//            while(driveToPointAsync(new Pose(24,36,0),true)){
-//                asyncPositionCorrector();
-//            }
-//            //release
-//            while(driveToPointAsync(new Pose(60,60,0),true)){
-//                asyncPositionCorrector();
-//            }
-//        }
+        }
+//        else if (colorDetector.location == Location.RIGHT) {
+        else if(true){
+                while (!driveToPointAsync(new Pose(12, 36, Math.PI), true)) {
+                    asyncPositionCorrector();
+                }
 
-        //while(opModeIsActive() && !done) {
+                while (!driveToPointAsync(new Pose(-1.5, 40, Math.PI), true)) {
+                    asyncPositionCorrector();
+                }
+                releasePixel();
+                while (!driveToPointAsync(new Pose(12, 40, Math.PI), true)) {
+                    asyncPositionCorrector();
+                }
+                while (!driveToPointAsync(new Pose(60, 63, Math.PI), true)) {
+                    asyncPositionCorrector();
+                }
+
+
+        }
+        else{ //left, (-27, -45)
+
+                while (!driveToPointAsync(new Pose(22.5, 40, Math.PI), true)) {
+                    asyncPositionCorrector();
+                }
+                releasePixel();
+                while (!driveToPointAsync(new Pose(60, 63, Math.PI), true)) {
+                    asyncPositionCorrector();
+                }
+        }
+
+        while(opModeIsActive() && !done) {
 
         packet.put("Field Pose",fieldPose);
-//            packet.put("velocity Pose",velocityPose.angle);
-//            dashboard.sendTelemetryPacket(packet);
-        //}
+            packet.put("velocity Pose",velocityPose.angle);
+            dashboard.sendTelemetryPacket(packet);
+        }
         while(opModeIsActive()){
             asyncPositionCorrector();
             //done = driveToPoint(new Pose(96,48,0),true);
+            while(driveToPointAsync(new Pose(12,30,Math.PI),true)){
+                asyncPositionCorrector();
+            }
         }
         //turnRobot(Math.PI/2);
     }
