@@ -21,7 +21,7 @@ public class MainTeleOp extends StarterAuto {
     @Override
     public void runOpMode() {
         TelemetryPacket packet = new TelemetryPacket();
-        initialize(new Pose(0,0,0));
+        initialize(new Pose(0, 0, 0));
         double zeroAngle = 0;
         boolean speedMod = true;
         boolean fieldCentric = true;
@@ -94,7 +94,7 @@ public class MainTeleOp extends StarterAuto {
             if (driveY) {
                 zeroAngle = current.angle;
             }
-            //Ask if we still want this or change be to be something useful
+            // Ask if we still want this or change be to be something useful
             if (driveB && !previousArmB) {
                 fieldCentric = !fieldCentric;
             }
@@ -105,70 +105,60 @@ public class MainTeleOp extends StarterAuto {
                 rotX = driveXleftStick;
                 rotY = driveYleftStick;
             }
-            //Moves the arm back and forth
-            if(!(armXleftStick<0.05 && armXleftStick>-0.05)){
-                armMove(armXleftStick/4);
-            }
-            else{
+            // Moves the arm back and forth
+            if (!(armXleftStick < 0.05 && armXleftStick > -0.05)) {
+                armMove(armXleftStick / 4);
+            } else {
                 armMotor.setPower(0);
             }
-            //Moves the strings out and in
-            if((armRightTrigger>0.05)||(armLeftTrigger>0.05)){
-                if(armRightTrigger>0.05){
-                    stringAsync(stringPot.getVoltage()+.05);
+            // Moves the strings out and in
+            if ((armRightTrigger > 0.05) || (armLeftTrigger > 0.05)) {
+                if (armRightTrigger > 0.05) {
+                    stringAsync(stringPot.getVoltage() + .05);
+                } else {
+                    stringAsync(stringPot.getVoltage() - 0.05);
                 }
-                else{
-                    stringAsync(stringPot.getVoltage()-0.05);
-                }
-            }
-            else{
+            } else {
                 stringMotor.setPower(0);
             }
-            packet.put("ArmPot",armPot.getVoltage());
-            //Moves the servo
-            if((armDpadUp || previousDpadUp || armDpadDown || previousDpadDown)){
-                lift(armDpadUp,previousDpadUp,armDpadDown,previousDpadDown);
+            packet.put("ArmPot", armPot.getVoltage());
+            // Moves the servo
+            if ((armDpadUp || previousDpadUp || armDpadDown || previousDpadDown)) {
+                lift(armDpadUp, previousDpadUp, armDpadDown, previousDpadDown);
             }
-            if(armX && previousArmX){
+            if (armX && previousArmX) {
                 intakeMotor.setPower(.5);
-            }
-            else if(armB && previousArmB){
+            } else if (armB && previousArmB) {
                 intakeMotor.setPower(-.5);
-            }
-            else{
+            } else {
                 intakeMotor.setPower(0);
             }
-            if(armA && !previousArmA){
-                if(currentPosition == 2){
+            if (armA && !previousArmA) {
+                if (currentPosition == 2) {
                     setFinger(servoPositions[1]);
                     currentPosition = 1;
                     increasingPosition = "decreasing";
-                }
-                else if(currentPosition==1){
-                    if(increasingPosition.equals("increasing")){
+                } else if (currentPosition == 1) {
+                    if (increasingPosition.equals("increasing")) {
                         setFinger(servoPositions[2]);
                         currentPosition = 2;
-                    }
-                    else{
+                    } else {
                         setFinger(servoPositions[0]);
                         currentPosition = 0;
                     }
-                }
-                else{
+                } else {
                     setFinger(servoPositions[1]);
                     currentPosition = 1;
-                    increasingPosition="increasing";
+                    increasingPosition = "increasing";
                 }
             }
-            if(!armY&&previousArmY){
-                if(Math.abs(5-flipperPosition)<.05){
+            if (!armY && previousArmY) {
+                if (Math.abs(5 - flipperPosition) < .05) {
                     setFlipperPosition(-1);
-                }
-                else{
+                } else {
                     setFlipperPosition(1);
                 }
             }
-
 
             packet.put("rotatex", rotX);
             packet.put("rotatey", rotY);
@@ -182,22 +172,24 @@ public class MainTeleOp extends StarterAuto {
             double backLeftPower = (rotY - rotX - rx) / denominator;
             double frontRightPower = (rotY - rotX + rx) / denominator;
             double backRightPower = (rotY + rotX + rx) / denominator;
-            double s= deadLeft.getCurrentPosition();
-            double t= deadRight.getCurrentPosition();
-            double d= deadPerp.getCurrentPosition();
-            packet.put("deadLeft",s);
-            packet.put("deadRight",t);
-            packet.put("deadPerp",d);
+            double s = deadLeft.getCurrentPosition();
+            double t = deadRight.getCurrentPosition();
+            double d = deadPerp.getCurrentPosition();
+            packet.put("deadLeft", s);
+            packet.put("deadRight", t);
+            packet.put("deadPerp", d);
 
-            frontRight.setPower(frontRightPower);  // front
-            frontLeft.setPower(frontLeftPower);    // left
-            backRight.setPower(backRightPower);    // right
-            backLeft.setPower(backLeftPower);      // back
+            frontRight.setPower(frontRightPower); // front
+            frontLeft.setPower(frontLeftPower); // left
+            backRight.setPower(backRightPower); // right
+            backLeft.setPower(backLeftPower); // back
 
             packet.put("zer", Math.toDegrees(zeroAngle));
             packet.put("imu x ", Math.toDegrees(current.angle));
-            packet.put("imu y ", Math.toDegrees(imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).secondAngle));
-            packet.put("imu z ", Math.toDegrees(imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle));
+            packet.put("imu y ", Math.toDegrees(
+                    imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).secondAngle));
+            packet.put("imu z ", Math.toDegrees(
+                    imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle));
             dashboard.sendTelemetryPacket(packet);
             try {
                 previousGamepad1.copy(cur1);
