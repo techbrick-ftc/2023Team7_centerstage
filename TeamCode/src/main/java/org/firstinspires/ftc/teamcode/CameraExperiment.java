@@ -24,18 +24,16 @@ public class CameraExperiment extends LinearOpMode {
         int pos2Y = 262;
         int pos3X = 660;
         int pos3Y = 278;
-        Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
-
+        Point[] points = { new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y) };
 
         ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
 
         waitForStart();
         while (opModeIsActive()) {
             TelemetryPacket packet = new TelemetryPacket();
-            //packet.put("x", 3.7);
+            // packet.put("x", 3.7);
             packet.put("location", colorDetector.location);
             dashboard.sendTelemetryPacket(packet);
-
 
         }
     }

@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -8,7 +7,6 @@ import org.opencv.core.Point;
 
 @Autonomous(name = "AutoRedRight")
 public class AutoRedRight extends StarterAuto {
-
 
     @Override
     public void runOpMode() {
@@ -25,16 +23,16 @@ public class AutoRedRight extends StarterAuto {
         int pos2Y = 262;
         int pos3X = 660;
         int pos3Y = 278;
-        Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
+        Point[] points = { new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y) };
 
-
-        //ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
+        // ColorDetector colorDetector = new ColorDetector(points, 10, 10, false,
+        // hardwareMap);
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
         waitForStart();
         // detect the colour (positions are estimates)
-        //robot is about 16 inches long
-        //if (colorDetector.location == Location.CENTER) {
-            if(false){
+        // robot is about 16 inches long
+        // if (colorDetector.location == Location.CENTER) {
+        if (false) {
             while (!driveToPointAsync(new Pose(12, -39, 0), true)) {
                 asyncPositionCorrector();
             }
@@ -47,9 +45,9 @@ public class AutoRedRight extends StarterAuto {
             }
 
             // rotate and then move or spline under gate past E towards center of backdrop
-                }
-                //else if (colorDetector.location == Location.LEFT) {
-                else if(false){
+        }
+        // else if (colorDetector.location == Location.LEFT) {
+        else if (false) {
             while (!driveToPointAsync(new Pose(12, -36, 0), true)) {
                 asyncPositionCorrector();
             }
@@ -65,8 +63,7 @@ public class AutoRedRight extends StarterAuto {
                 asyncPositionCorrector();
             }
 
-
-        } else { //right, (-27, -45)
+        } else { // right, (-27, -45)
 
             while (!driveToPointAsync(new Pose(22.5, -40, 0), true)) {
                 asyncPositionCorrector();
@@ -87,6 +84,6 @@ public class AutoRedRight extends StarterAuto {
             asyncPositionCorrector();
             done = driveToPointAsync(new Pose(96, 48, 0), true);
         }
-        //turnRobot(Math.PI/2);
+        // turnRobot(Math.PI/2);
     }
 }
