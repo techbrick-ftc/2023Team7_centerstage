@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -11,19 +12,19 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
-@TeleOp(name = "Camera Experiment", group = "Utility")
+@Autonomous(name = "Camera Experiment", group = "Utility")
 public class CameraExperiment extends LinearOpMode {
     OpenCvCamera camera;
     FtcDashboard dashboard = FtcDashboard.getInstance();
 
     @Override
     public void runOpMode() throws InterruptedException {
-        int pos1X = 124;
-        int pos1Y = 310;
-        int pos2X = 392;
-        int pos2Y = 262;
-        int pos3X = 660;
-        int pos3Y = 278;
+        int pos1X = 55;
+        int pos1Y = 270;
+        int pos2X = 440;
+        int pos2Y = 245;
+        int pos3X = 765;
+        int pos3Y = 270;
         Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
 
 

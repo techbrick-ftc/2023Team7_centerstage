@@ -20,22 +20,21 @@ public class AutoBlueLeft extends StarterAuto {
         long currentTime = System.nanoTime();
         long previousTime = System.nanoTime();
         boolean done = false;
-        int pos1X = 124;
-        int pos1Y = 310;
-        int pos2X = 392;
-        int pos2Y = 262;
-        int pos3X = 660;
-        int pos3Y = 278;
+        int pos1X = 55;
+        int pos1Y = 270;
+        int pos2X = 440;
+        int pos2Y = 245;
+        int pos3X = 765;
+        int pos3Y = 270;
         Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
 
 
-        //ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
+        ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
         waitForStart();
         // detect the colour (positions are estimates)
         //robot is about 16 inches long
-//        if (colorDetector.location == Location.CENTER) {
-            if(true){
+        if (colorDetector.location == Location.CENTER) {
             //release
                 while (!driveToPointAsync(new Pose(12, 39, Math.PI), true)) {
                     asyncPositionCorrector();
@@ -44,26 +43,25 @@ public class AutoBlueLeft extends StarterAuto {
                 while (!driveToPointAsync(new Pose(12, 63, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
-                while (!driveToPointAsync(new Pose(60, 63, Math.PI), true)) {
+                while (!driveToPointAsync(new Pose(60, 60, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
 
             // rotate and then move or spline under gate past E towards center of backdrop
         }
-//        else if (colorDetector.location == Location.RIGHT) {
-        else if(true){
+        else if (colorDetector.location == Location.RIGHT) {
                 while (!driveToPointAsync(new Pose(12, 36, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
 
-                while (!driveToPointAsync(new Pose(-1.5, 40, Math.PI), true)) {
+                while (!driveToPointAsync(new Pose(0, 40, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
                 releasePixel();
                 while (!driveToPointAsync(new Pose(12, 40, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
-                while (!driveToPointAsync(new Pose(60, 63, Math.PI), true)) {
+                while (!driveToPointAsync(new Pose(60, 60, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
 
@@ -71,11 +69,14 @@ public class AutoBlueLeft extends StarterAuto {
         }
         else{ //left, (-27, -45)
 
-                while (!driveToPointAsync(new Pose(22.5, 40, Math.PI), true)) {
+                while (!driveToPointAsync(new Pose(25.5, 40, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
                 releasePixel();
-                while (!driveToPointAsync(new Pose(60, 63, Math.PI), true)) {
+                while (!driveToPointAsync(new Pose(25.5, 60, Math.PI), true)) {
+                    asyncPositionCorrector();
+                }
+                while (!driveToPointAsync(new Pose(60, 60, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
         }

@@ -54,9 +54,11 @@ public class AutoDrive extends StarterAuto {
 //        while(!stringAsync(VOLTSSTRINGUP+.05)){
 //
 //        }
-        pixelPlaceAuto(Location.CENTER);
+        //pixelPlaceAuto(Location.CENTER);
         //stringMotor.setPower(.2);
         while (opModeIsActive()) {
+            ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
+
             asyncPositionCorrector();
             TelemetryPacket packet = new TelemetryPacket();
 //            packet.put("String", stringPot.getVoltage());
@@ -70,6 +72,7 @@ public class AutoDrive extends StarterAuto {
                 packet.put("armpot",armPot.getVoltage());
                 packet.put("stringpot",stringPot.getVoltage());
                 packet.put("Field Pose", fieldPose);
+                packet.put("location?", colorDetector.location);
                 dashboard.sendTelemetryPacket(packet);
                 //done = driveToPoint(new Pose(96,48,0),true);
             //}

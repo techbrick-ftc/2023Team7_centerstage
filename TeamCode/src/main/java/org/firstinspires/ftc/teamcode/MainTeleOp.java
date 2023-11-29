@@ -57,7 +57,7 @@ public class MainTeleOp extends StarterAuto {
             double armXleftStick = gamepad2.left_stick_x; // Counteract imperfect strafing
             double armYrightStick = -gamepad2.right_stick_y;
             double armXrightStick = gamepad2.right_stick_x;
-            rx = gamepad1.right_stick_x;
+            rx = -gamepad1.right_stick_x;
             double armRightTrigger = gamepad2.right_trigger;
             double armLeftTrigger = gamepad2.left_trigger;
             boolean driveA = cur1.a;
@@ -84,10 +84,10 @@ public class MainTeleOp extends StarterAuto {
             if (!speedMod) {
                 driveYleftStick = Range.clip(-gamepad1.left_stick_y, -0.4, 0.4);
                 driveXleftStick = Range.clip(gamepad1.left_stick_x, -0.4, 0.4);
-                rx = Range.clip(gamepad1.right_stick_x, -0.25, 0.25);
+                rx = -Range.clip(gamepad1.right_stick_x, -0.25, 0.25);
             } else {
                 driveYleftStick = Range.clip(-gamepad1.left_stick_y, -0.95, 0.95);
-                rx = Range.clip(gamepad1.right_stick_x, -0.75, 0.75);
+                rx = -Range.clip(gamepad1.right_stick_x, -0.75, 0.75);
             }
             // Read inverse IMU heading, as the IMU heading is CW positive
             double botHeading = -(current.angle - zeroAngle);
@@ -97,6 +97,9 @@ public class MainTeleOp extends StarterAuto {
             //Ask if we still want this or change be to be something useful
             if (driveB && !previousArmB) {
                 fieldCentric = !fieldCentric;
+            }
+            if(driveA){
+                airplane.setPosition(1);
             }
             if (fieldCentric) {
                 rotX = driveXleftStick * Math.cos(botHeading) - driveYleftStick * Math.sin(botHeading);
@@ -130,10 +133,10 @@ public class MainTeleOp extends StarterAuto {
                 lift(armDpadUp,previousDpadUp,armDpadDown,previousDpadDown);
             }
             if(armX && previousArmX){
-                intakeMotor.setPower(.5);
+                intakeMotor.setPower(.7);
             }
             else if(armB && previousArmB){
-                intakeMotor.setPower(-.5);
+                intakeMotor.setPower(-.7);
             }
             else{
                 intakeMotor.setPower(0);

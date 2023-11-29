@@ -129,6 +129,7 @@ final double ARMROTATE0POSITION = 0.604;
     double flipperPosition = 0;
     //Control Hub port 1
     public Servo finger;
+    public Servo airplane;
     int[] servoPositions = {-1,0,1};
     int currentPosition = 2;
     String increasingPosition = "increasing";
@@ -372,7 +373,7 @@ final double ARMROTATE0POSITION = 0.604;
             backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");     // C0
             frontRight = hardwareMap.get(DcMotorEx.class, "frontRight"); // C2
             backRight = hardwareMap.get(DcMotorEx.class, "backRight");   // C1
-            lifterMotor = hardwareMap.get(DcMotorEx.class, "lifter");    // E0
+            lifterMotor = hardwareMap.get(DcMotor.class, "lifter");    // E0
             intakeMotor = hardwareMap.get(DcMotor.class, "intake");      // E1
             stringMotor = hardwareMap.get(DcMotor.class,"stringMotor");  // E3
             armMotor = hardwareMap.get(DcMotor.class,"arm");             // E2
@@ -399,6 +400,7 @@ final double ARMROTATE0POSITION = 0.604;
             colorBL = hardwareMap.colorSensor.get("colorBL");
             armFlipper = hardwareMap.servo.get("armFlipper");
             finger = hardwareMap.servo.get("finger");
+            airplane = hardwareMap.servo.get("airplane");//expansion hub port 1 servo
         finger.setPosition(servoPositions[0]); //servoPositions[2]
             imu = hardwareMap.get(IMU.class, "imu");
             backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

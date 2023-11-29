@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.opencv.core.Point;
+import org.openftc.easyopencv.OpenCvCamera;
 
 @Autonomous(name = "AutoBlueRight")
 public class AutoBlueRight extends StarterAuto {
@@ -12,29 +14,36 @@ public class AutoBlueRight extends StarterAuto {
 
     @Override
     public void runOpMode() {
+        FtcDashboard dashboard = FtcDashboard.getInstance();
         TelemetryPacket packet = new TelemetryPacket();
         initialize(new Pose(-36,64,Math.PI));
-        waitForStart();
         zeroAngle = getCurrentPose().angle;
-        long currentTime = System.nanoTime();
-        long previousTime = System.nanoTime();
-        boolean done = false;
-        int pos1X = 124;
-        int pos1Y = 310;
-        int pos2X = 392;
-        int pos2Y = 262;
-        int pos3X = 660;
-        int pos3Y = 278;
+        int pos1X = 55;
+        int pos1Y = 270;
+        int pos2X = 440;
+        int pos2Y = 245;
+        int pos3X = 765;
+        int pos3Y = 270;
         Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
 
 
-       //ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
+
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
         waitForStart();
+        ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
+
+
+        packet.put("location", colorDetector.location);
+            dashboard.sendTelemetryPacket(packet);
+            sleep(1000);
+
+
+        //packet.put("x", 3.7);
+        packet.put("location", colorDetector.location);
+        dashboard.sendTelemetryPacket(packet);
         // detect the colour (positions are estimates)
         //robot is about 16 inches long
-        //if (colorDetector.location == Location.CENTER) {
-            if(false){
+        if (colorDetector.location == Location.CENTER) {
             while(!driveToPointAsync(new Pose(-36,38,Math.PI),true)){
                 asyncPositionCorrector();
             }
@@ -54,8 +63,7 @@ public class AutoBlueRight extends StarterAuto {
 
             // rotate and then move or spline under gate past E towards center of backdrop
        }
-        //else if (colorDetector.location == Location.RIGHT) {
-        else if(false){
+        else if (colorDetector.location == Location.RIGHT) {
             while(!driveToPointAsync(new Pose(-48,40,Math.PI),true)){
                 asyncPositionCorrector();
             }
