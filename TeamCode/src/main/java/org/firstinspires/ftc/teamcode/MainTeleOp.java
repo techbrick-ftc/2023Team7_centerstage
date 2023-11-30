@@ -110,11 +110,20 @@ public class MainTeleOp extends StarterAuto {
             }
             //Moves the arm back and forth
             if(!(armXleftStick<0.05 && armXleftStick>-0.05)){
-                armMove(armXleftStick/4);
+                armMove(armXleftStick);
             }
             else{
                 armMotor.setPower(0);
             }
+//            if(!(armXleftStick<0.05 && armXleftStick>-0.05)){
+//                if(armXleftStick>0.05){
+//                    armAsync(armPot.getVoltage()+.05);
+//                }
+//                else{
+//                    armAsync(armPot.getVoltage()-0.05);
+//                }
+//            }
+
             //Moves the strings out and in
             if((armRightTrigger>0.05)||(armLeftTrigger>0.05)){
                 if(armRightTrigger>0.05){
@@ -127,16 +136,17 @@ public class MainTeleOp extends StarterAuto {
             else{
                 stringMotor.setPower(0);
             }
-            packet.put("ArmPot",armPot.getVoltage());
-            //Moves the servo
-            if((armDpadUp || previousDpadUp || armDpadDown || previousDpadDown)){
-                lift(armDpadUp,previousDpadUp,armDpadDown,previousDpadDown);
+            packet.put("ArmPot", armPot.getVoltage());
+            packet.put("StringPot",stringPot.getVoltage());
+            // Moves the servo
+            if ((armDpadUp || previousDpadUp || armDpadDown || previousDpadDown)) {
+                lift(armDpadUp, previousDpadUp, armDpadDown, previousDpadDown);
             }
             if(armX && previousArmX){
-                intakeMotor.setPower(.7);
+                intakeMotor.setPower(1);
             }
             else if(armB && previousArmB){
-                intakeMotor.setPower(-.7);
+                intakeMotor.setPower(-1);
             }
             else{
                 intakeMotor.setPower(0);
@@ -164,7 +174,7 @@ public class MainTeleOp extends StarterAuto {
                 }
             }
             if(!armY&&previousArmY){
-                if(Math.abs(5-flipperPosition)<.05){
+                if(armFlipper.getPosition()>0){
                     setFlipperPosition(-1);
                 }
                 else{

@@ -83,7 +83,7 @@ public class StarterAuto extends LinearOpMode {
 final double ARMROTATE0POSITION = 0.604;
     final double ARMROTATEMINVOLT = 0.191;//actually .084; then why not put .084? - Aidan
 
-    final double VOLTSSTRINGUP = .941;
+    final double VOLTSSTRINGUP = .935;
     final double VOLTSSTRINGDOWN = 1.335;// fiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiind!
     double lastTime;
     double startDecel = 30;
@@ -130,7 +130,7 @@ final double ARMROTATE0POSITION = 0.604;
     //Control Hub port 1
     public Servo finger;
     public Servo airplane;
-    int[] servoPositions = {-1,0,1};
+    double[] servoPositions = {-1,.5,1};
     int currentPosition = 2;
     String increasingPosition = "increasing";
     public ColorSensor colorFR;
@@ -401,7 +401,7 @@ final double ARMROTATE0POSITION = 0.604;
             armFlipper = hardwareMap.servo.get("armFlipper");
             finger = hardwareMap.servo.get("finger");
             airplane = hardwareMap.servo.get("airplane");//expansion hub port 1 servo
-        finger.setPosition(servoPositions[0]); //servoPositions[2]
+        finger.setPosition(servoPositions[1]); //servoPositions[2]
             imu = hardwareMap.get(IMU.class, "imu");
             backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -456,7 +456,7 @@ final double ARMROTATE0POSITION = 0.604;
         double armDif = targVolt - armVolt;
         TelemetryPacket packet = new TelemetryPacket();
 
-        double multi = .5;
+        double multi = .75;
         packet.put("armDif",armDif);
         packet.put("targVolt",targVolt);
 //        if((targVolt > ARMROTATEMAXVOLT) || (targVolt < ARMROTATEMINVOLT)){ // Just incase
@@ -494,7 +494,7 @@ final double ARMROTATE0POSITION = 0.604;
 //        Positive power makes voltage go down
         double armDif = targVolt - stringPot.getVoltage();//-.3
         TelemetryPacket packet = new TelemetryPacket();
-        double multi = .5;
+        double multi = .75;
         packet.put("stringDif",armDif);
         packet.put("currentVolt",stringPot.getVoltage());
         packet.put("targVoltString",targVolt);
@@ -551,8 +551,8 @@ final double ARMROTATE0POSITION = 0.604;
                 lifterMotor.setPower(0);
             }
         }
-        protected void setFinger(int degree){
-            finger.setPosition(degree/360);
+        protected void setFinger(double degree){
+            finger.setPosition(degree);
         }
 
         protected void flipArm(double rightStickY){
@@ -581,44 +581,75 @@ final double ARMROTATE0POSITION = 0.604;
         protected void setFlipperPosition(int position){
             armFlipper.setPosition(position);
         }
+        protected void returnArm(){
+            while(!armAsync(ARMROTATE0POSITION)) {
+
+            }
+            setFlipperPosition(1);
+            while (!(stringAsync(VOLTSSTRINGDOWN))) {
+
+            }
+            finger.setPosition(servoPositions[1]);
+
+        }
         protected void pixelPlaceAuto(Location location) {
             if (location == Location.CENTER) {
                 setFlipperPosition(1);
-                //           stringAsync();
+                //stringAsync();
 //            armAsync();
                 while(!armAsync(0.6)) {
 
                 }
+            while (!(stringAsync(VOLTSSTRINGUP))) {
+
+                }
                 armFlipper.setPosition(-1);
-                while(!(stringAsync(VOLTSSTRINGUP+.05))){
-
-                }
-                while(!(armAsync(ARMEXTENDEDMAXVOLT-.01))){
+            while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
 
                 }
 
+            sleep(500);
                 finger.setPosition(1);
             } else if (location == Location.LEFT) {
                 setFlipperPosition(1);
-                //           stringAsync();
-//            armAsync();
-                setFinger(0);
-                armAsync(0.6);
-                setFlipperPosition(-1);
-                stringAsync(VOLTSSTRINGDOWN);
+                // stringAsync();
+                // armAsync();
+                while (!armAsync(0.6)) {
+
+                }
+                while (!(stringAsync(VOLTSSTRINGDOWN))) {
+
+                }
+                armFlipper.setPosition(-1);
+                while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
+
+                }
+                sleep(500);
+                finger.setPosition(1);
             } else {
-                setFlipperPosition(-1);
-                //           stringAsync();
-//            armAsync();
-                setFinger(0);
-                armAsync(0.6);
-                setFlipperPosition(-1);
-                stringAsync(VOLTSSTRINGDOWN);
-            }
+                setFlipperPosition(1);
+                // stringAsync();
+                // armAsync();
+                while (!armAsync(0.6)) {
+
+                }
+                while (!(stringAsync(VOLTSSTRINGUP))) {
+
+                }
+                armFlipper.setPosition(-1);
+                while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
+
+                }
+                sleep(500);
+                finger.setPosition(1);
         }
-//comment #2
-        @Override
-        public void runOpMode () {
+
+
+        }
+
+    // comment #2
+    @Override
+    public void runOpMode() {
     }
 
 }
