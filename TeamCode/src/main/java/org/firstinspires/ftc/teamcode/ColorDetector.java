@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -23,9 +22,7 @@ enum Location {
     LEFT, CENTER, RIGHT
 }
 
-
 public class ColorDetector extends OpenCvPipeline {
-
 
     Point point1;
     Point point2;
@@ -38,7 +35,6 @@ public class ColorDetector extends OpenCvPipeline {
     int[] centers;
     int[] rights;
 
-
     public ColorDetector(Point[] points, int width, int height, boolean isRed, HardwareMap hardwareMap) {
         point1 = points[0];
         point2 = points[1];
@@ -46,8 +42,10 @@ public class ColorDetector extends OpenCvPipeline {
         this.width = width;
         this.height = height;
         this.isRed = isRed;
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        OpenCvCamera camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id",
+                hardwareMap.appContext.getPackageName());
+        OpenCvCamera camera = OpenCvCameraFactory.getInstance()
+                .createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         camera.setPipeline(this);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
@@ -81,15 +79,13 @@ public class ColorDetector extends OpenCvPipeline {
         Mat green = new Mat();
         Mat blue = new Mat();
 
-
         Core.extractChannel(rgbSection, red, 0);
         Core.extractChannel(rgbSection, green, 1);
         Core.extractChannel(rgbSection, blue, 2);
 
-        int[] RGB = {(int) Core.mean(red).val[0], (int) Core.mean(green).val[0], (int) Core.mean(blue).val[0]};
+        int[] RGB = { (int) Core.mean(red).val[0], (int) Core.mean(green).val[0], (int) Core.mean(blue).val[0] };
         return RGB;
     }
-
 
     Location checkLocation(Mat left, Mat center, Mat right, int colorChannel) {
 
@@ -117,7 +113,6 @@ public class ColorDetector extends OpenCvPipeline {
         Mat region2 = input.submat(rect2);
         Mat region3 = input.submat(rect3);
         location = checkLocation(region1, region2, region3, isRed ? 0 : 2);
-
 
         Imgproc.rectangle(input, rect1, new Scalar(0));
         Imgproc.rectangle(input, rect2, new Scalar(0));
