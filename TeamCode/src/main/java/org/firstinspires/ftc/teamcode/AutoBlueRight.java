@@ -29,13 +29,12 @@ public class AutoBlueRight extends StarterAuto {
 
 
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
-        waitForStart();
         ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
 
+        waitForStart();
 
-        packet.put("location", colorDetector.location);
+            packet.put("location", colorDetector.location);
             dashboard.sendTelemetryPacket(packet);
-            sleep(1000);
 
 
         //packet.put("x", 3.7);

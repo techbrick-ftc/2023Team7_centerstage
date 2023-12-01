@@ -28,9 +28,19 @@ public class AutoRedLeft extends StarterAuto {
         Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
 
 
-        ColorDetector colorDetector = new ColorDetector(points, 10, 10, true, hardwareMap);
-        // We wan to start the bot at x: -36, y: -60, heading: 0 (probably)
+
+        // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
+        ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
+
         waitForStart();
+
+        packet.put("location", colorDetector.location);
+        dashboard.sendTelemetryPacket(packet);
+
+
+        //packet.put("x", 3.7);
+        packet.put("location", colorDetector.location);
+        dashboard.sendTelemetryPacket(packet);
         // detect the colour (positions are estimates)
         //robot is about 16 inches long
         if (colorDetector.location == Location.CENTER) {

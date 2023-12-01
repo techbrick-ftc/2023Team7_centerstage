@@ -585,7 +585,7 @@ final double ARMROTATE0POSITION = 0.604;
             while(!armAsync(ARMROTATE0POSITION)) {
 
             }
-            setFlipperPosition(1);
+            //setFlipperPosition(1);
             while (!(stringAsync(VOLTSSTRINGDOWN))) {
 
             }

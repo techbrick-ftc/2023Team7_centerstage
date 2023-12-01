@@ -56,6 +56,8 @@ public class AutoDrive extends StarterAuto {
 //
 //        }
         pixelPlaceAuto(Location.CENTER);
+        sleep(3000);
+        returnArm();
         //stringMotor.setPower(.2);
         while (opModeIsActive()) {
             //ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
