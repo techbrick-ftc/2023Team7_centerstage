@@ -60,6 +60,32 @@ public class ColorDetector extends OpenCvPipeline {
         });
         FtcDashboard.getInstance().startCameraStream(camera, 0);
     }
+    public ColorDetector( int width, int height, boolean isRed, HardwareMap hardwareMap) {
+        point1 = new Point(30, 390);
+        point2 = new Point(440, 305);
+        point3 = new Point(855, 360);
+        // position 1 is left, position 2 is center, position 3 is right
+        this.width = width;
+        this.height = height;
+        this.isRed = isRed;
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id",
+                hardwareMap.appContext.getPackageName());
+        OpenCvCamera camera = OpenCvCameraFactory.getInstance()
+                .createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        camera.setPipeline(this);
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                camera.startStreaming(800, 448, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+
+            }
+        });
+        FtcDashboard.getInstance().startCameraStream(camera, 0);
+    }
 
     Rect findPoints(Point center) {
         Point topLeft = new Point(center.x - width * .5, center.y - height * .5);
