@@ -19,28 +19,11 @@ public class AutoRedRight extends StarterAuto {
         long currentTime = System.nanoTime();
         long previousTime = System.nanoTime();
         boolean done = false;
-        int pos1X = 55;
-        int pos1Y = 270;
-        int pos2X = 440;
-        int pos2Y = 245;
-        int pos3X = 765;
-        int pos3Y = 270;
-        Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
 
 
-
+        ColorDetector colorDetector = new ColorDetector(10, 10, true, hardwareMap);
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
-        ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
-
         waitForStart();
-
-        packet.put("location", colorDetector.location);
-        dashboard.sendTelemetryPacket(packet);
-
-
-        //packet.put("x", 3.7);
-        packet.put("location", colorDetector.location);
-        dashboard.sendTelemetryPacket(packet);
         // detect the colour (positions are estimates)
         //robot is about 16 inches long
         if (colorDetector.location == Location.CENTER) {

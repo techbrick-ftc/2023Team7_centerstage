@@ -19,14 +19,14 @@ public class CameraExperiment extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        int pos1X = 55;
-        int pos1Y = 270;
+        int pos1X = 30;
+        int pos1Y = 390;
         int pos2X = 440;
-        int pos2Y = 245;
-        int pos3X = 765;
-        int pos3Y = 270;
+        int pos2Y = 305;
+        int pos3X = 855;
+        int pos3Y = 360;
         Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
-
+// position 1 is left, position 2 is center, position 3 is right
 
         ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
 

@@ -18,23 +18,17 @@ public class AutoBlueRight extends StarterAuto {
         TelemetryPacket packet = new TelemetryPacket();
         initialize(new Pose(-36,64,Math.PI));
         zeroAngle = getCurrentPose().angle;
-        int pos1X = 55;
-        int pos1Y = 270;
-        int pos2X = 440;
-        int pos2Y = 245;
-        int pos3X = 765;
-        int pos3Y = 270;
-        Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
 
 
 
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
-        ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
-
         waitForStart();
+        ColorDetector colorDetector = new ColorDetector(10, 10, false, hardwareMap);
 
-            packet.put("location", colorDetector.location);
+
+        packet.put("location", colorDetector.location);
             dashboard.sendTelemetryPacket(packet);
+            sleep(1000);
 
 
         //packet.put("x", 3.7);
