@@ -14,26 +14,18 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @Autonomous(name = "Camera Experiment", group = "Utility")
 public class CameraExperiment extends LinearOpMode {
-    OpenCvCamera camera;
     FtcDashboard dashboard = FtcDashboard.getInstance();
+    TelemetryPacket packet = new TelemetryPacket();
 
     @Override
     public void runOpMode() throws InterruptedException {
-        int pos1X = 30;
-        int pos1Y = 390;
-        int pos2X = 440;
-        int pos2Y = 305;
-        int pos3X = 855;
-        int pos3Y = 360;
-        Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
+
 // position 1 is left, position 2 is center, position 3 is right
 
-        ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
+        ColorDetector colorDetector = new ColorDetector(10, 10, true, hardwareMap);
 
         waitForStart();
         while (opModeIsActive()) {
-            TelemetryPacket packet = new TelemetryPacket();
-            //packet.put("x", 3.7);
             packet.put("location", colorDetector.location);
             dashboard.sendTelemetryPacket(packet);
 

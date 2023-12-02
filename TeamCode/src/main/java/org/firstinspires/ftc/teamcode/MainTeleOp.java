@@ -57,7 +57,9 @@ public class MainTeleOp extends StarterAuto {
             double armXleftStick = gamepad2.left_stick_x; // Counteract imperfect strafing
             double armYrightStick = -gamepad2.right_stick_y;
             double armXrightStick = gamepad2.right_stick_x;
-            rx = -gamepad1.right_stick_x;
+            double driveXrightStick = gamepad1.right_stick_x;
+            double driveYrightstick = gamepad1.right_stick_y;
+                    rx = -gamepad1.right_stick_x;
             double armRightTrigger = gamepad2.right_trigger;
             double armLeftTrigger = gamepad2.left_trigger;
             boolean driveA = cur1.a;
@@ -84,11 +86,12 @@ public class MainTeleOp extends StarterAuto {
             if (!speedMod) {
                 driveYleftStick = Range.clip(-gamepad1.left_stick_y, -0.4, 0.4);
                 driveXleftStick = Range.clip(gamepad1.left_stick_x, -0.4, 0.4);
-                rx = -Range.clip(gamepad1.right_stick_x, -0.25, 0.25);
+                rx = Range.clip(gamepad1.right_stick_x, -0.25, 0.25);
             } else {
                 driveYleftStick = Range.clip(-gamepad1.left_stick_y, -0.95, 0.95);
-                rx = -Range.clip(gamepad1.right_stick_x, -0.75, 0.75);
+                rx = Range.clip(gamepad1.right_stick_x, -0.75, 0.75);
             }
+            packet.put("rx",rx);
             // Read inverse IMU heading, as the IMU heading is CW positive
             double botHeading = -(current.angle - zeroAngle);
             if (driveY) {

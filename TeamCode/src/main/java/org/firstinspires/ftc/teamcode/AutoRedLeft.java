@@ -43,9 +43,11 @@ public class AutoRedLeft extends StarterAuto {
                 while(!driveToPointAsync(new Pose(-56,-11,0),true)){
                     asyncPositionCorrector();
                 }
-                while(!driveToPointAsync(new Pose(60,-11,0),true)){
+            turnRobot(Math.PI/2);
+                while(!driveToPointAsync(new Pose(61,-11,Math.PI/2),true)){
                     asyncPositionCorrector();
                 }
+                pixelPlaceAuto(Location.CENTER,false);
 
                 // rotate and then move or spline under gate past E towards center of backdrop
             }
@@ -60,10 +62,11 @@ public class AutoRedLeft extends StarterAuto {
                 while(!driveToPointAsync(new Pose(-60,-12,0),true)){
                     asyncPositionCorrector();
                 }
-                while(!driveToPointAsync(new Pose(60,-12,0),true)){
+            turnRobot(Math.PI/2);
+                while(!driveToPointAsync(new Pose(61,-12,Math.PI/2),true)){
                     asyncPositionCorrector();
                 }
-
+            pixelPlaceAuto(Location.LEFT,!true);
 
             }
             else{ //right, (-27, -45)
@@ -80,12 +83,13 @@ public class AutoRedLeft extends StarterAuto {
                 while(!driveToPointAsync(new Pose(-36,-12,0),true)){
                     asyncPositionCorrector();
                 }
-                while(!driveToPointAsync(new Pose(60,-12,0),true)){
+            turnRobot(Math.PI/2);
+                while(!driveToPointAsync(new Pose(61,-12,Math.PI/2),true)){
                     asyncPositionCorrector();
                 }
+            pixelPlaceAuto(Location.RIGHT,false);
             }
         }
-        //turnRobot(Math.PI/2);
     }
 
 

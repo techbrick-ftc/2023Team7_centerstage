@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -12,9 +13,9 @@ public class AutoRedRight extends StarterAuto {
 
     @Override
     public void runOpMode() {
+        FtcDashboard dashboard = FtcDashboard.getInstance();
         TelemetryPacket packet = new TelemetryPacket();
         initialize(new Pose(12, -64, 0));
-        waitForStart();
         zeroAngle = getCurrentPose().angle;
         long currentTime = System.nanoTime();
         long previousTime = System.nanoTime();
@@ -22,8 +23,12 @@ public class AutoRedRight extends StarterAuto {
 
 
         ColorDetector colorDetector = new ColorDetector(10, 10, true, hardwareMap);
+        packet.put("location",colorDetector.location);
+        dashboard.sendTelemetryPacket(packet);
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
         waitForStart();
+        packet.put("location",colorDetector.location);
+        dashboard.sendTelemetryPacket(packet);
         // detect the colour (positions are estimates)
         //robot is about 16 inches long
         if (colorDetector.location == Location.CENTER) {
@@ -34,9 +39,11 @@ public class AutoRedRight extends StarterAuto {
             while (!driveToPointAsync(new Pose(12, -60, 0), true)) {
                 asyncPositionCorrector();
             }
-            while (!driveToPointAsync(new Pose(60, -60, 0), true)) {
+            turnRobot(Math.PI/2);
+            while (!driveToPointAsync(new Pose(61, -60, Math.PI/2), true)) {
                 asyncPositionCorrector();
             }
+            pixelPlaceAuto(Location.CENTER,true);
 
             // rotate and then move or spline under gate past E towards center of backdrop
                 }
@@ -52,9 +59,12 @@ public class AutoRedRight extends StarterAuto {
             while (!driveToPointAsync(new Pose(12, -40, 0), true)) {
                 asyncPositionCorrector();
             }
-            while (!driveToPointAsync(new Pose(60, -60, 0), true)) {
+            turnRobot(Math.PI/2);
+            while (!driveToPointAsync(new Pose(61, -56, Math.PI/2), true)) {
                 asyncPositionCorrector();
             }
+            pixelPlaceAuto(Location.LEFT,true);
+
 
 
         } else { //right, (-27, -45)
@@ -63,21 +73,15 @@ public class AutoRedRight extends StarterAuto {
                 asyncPositionCorrector();
             }
             releasePixel();
-            while (!driveToPointAsync(new Pose(60, -60, 0), true)) {
+            while (!driveToPointAsync(new Pose(22.5, -48, 0), true)) {
                 asyncPositionCorrector();
             }
-        }
+            turnRobot(Math.PI/2);
+            while (!driveToPointAsync(new Pose(61, -60, Math.PI/2), true)) {
+                asyncPositionCorrector();
+            }
+            pixelPlaceAuto(Location.RIGHT,true);
 
-        while (opModeIsActive() && !done) {
-
-            packet.put("Field Pose", fieldPose);
-            packet.put("velocity Pose", velocityPose.angle);
-            dashboard.sendTelemetryPacket(packet);
         }
-        while (opModeIsActive()) {
-            asyncPositionCorrector();
-            done = driveToPointAsync(new Pose(96, 48, 0), true);
-        }
-        //turnRobot(Math.PI/2);
     }
 }

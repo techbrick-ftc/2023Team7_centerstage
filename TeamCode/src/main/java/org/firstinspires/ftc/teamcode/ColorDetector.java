@@ -34,6 +34,7 @@ public class ColorDetector extends OpenCvPipeline {
     int[] lefts;
     int[] centers;
     int[] rights;
+    public OpenCvCamera camera;
 
     public ColorDetector(Point[] points, int width, int height, boolean isRed, HardwareMap hardwareMap) {
         point1 = points[0];
@@ -44,7 +45,7 @@ public class ColorDetector extends OpenCvPipeline {
         this.isRed = isRed;
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id",
                 hardwareMap.appContext.getPackageName());
-        OpenCvCamera camera = OpenCvCameraFactory.getInstance()
+        camera = OpenCvCameraFactory.getInstance()
                 .createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         camera.setPipeline(this);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -61,16 +62,16 @@ public class ColorDetector extends OpenCvPipeline {
         FtcDashboard.getInstance().startCameraStream(camera, 0);
     }
     public ColorDetector( int width, int height, boolean isRed, HardwareMap hardwareMap) {
-        point1 = new Point(30, 390);
-        point2 = new Point(440, 305);
-        point3 = new Point(855, 360);
+        point1 = new Point(45, 330);
+        point2 = new Point(420, 305);
+        point3 = new Point(780, 330);//x was 855 testing stuff rn 855 seems to break :(
         // position 1 is left, position 2 is center, position 3 is right
         this.width = width;
         this.height = height;
         this.isRed = isRed;
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id",
                 hardwareMap.appContext.getPackageName());
-        OpenCvCamera camera = OpenCvCameraFactory.getInstance()
+        camera = OpenCvCameraFactory.getInstance()
                 .createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         camera.setPipeline(this);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -85,6 +86,9 @@ public class ColorDetector extends OpenCvPipeline {
             }
         });
         FtcDashboard.getInstance().startCameraStream(camera, 0);
+    }
+    public void closeCamera(){
+        camera.closeCameraDevice();
     }
 
     Rect findPoints(Point center) {

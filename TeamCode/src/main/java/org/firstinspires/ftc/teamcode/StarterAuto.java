@@ -414,21 +414,27 @@ final double ARMROTATE0POSITION = 0.604;
 
         fieldPose = inputPose;
         imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.DOWN, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
-        zeroAngle = (imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle - zeroAngle) - inputPose.angle;
+        sleep(500);
+        // if robot takes zeroangle too much it breaks.
+        zeroAngle = (imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle) - inputPose.angle;
     }
 
 
     void turnRobot(double angle) {
+        TelemetryPacket packet = new TelemetryPacket();
         double difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
-        double directionalSpeed = Math.signum(difAngle) * 0.5;
-        while (opModeIsActive() && !((difAngle) < Math.toRadians(2))) {
+        double directionalSpeed;
+        while (opModeIsActive() && !(Math.abs(difAngle) < Math.toRadians(2))) {
             asyncPositionCorrector();
-            if (Math.abs(difAngle) < 0.05 * Math.PI) {
-                directionalSpeed *= 0.3;
-            } else if (Math.abs(difAngle) < 0.1 * Math.PI) {
-                directionalSpeed *= 0.5;
-            }
             difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
+            directionalSpeed = -Math.signum(difAngle) * 0.5;
+            packet.put("difangle", difAngle);
+            dashboard.sendTelemetryPacket(packet);
+            if (Math.abs(difAngle) < 0.08 * Math.PI) {
+                directionalSpeed *= 0.25;
+            } else if (Math.abs(difAngle) < 0.15 * Math.PI) {
+                directionalSpeed *= 0.4;
+            }
 
 
             setPower(backLeft, directionalSpeed, "backLeft");
@@ -463,11 +469,15 @@ final double ARMROTATE0POSITION = 0.604;
 //            armMotor.setPower(0);
 //            return true;
 //        }
-        if((armVolt>ARMROTATEMAXVOLT)&&(stringPot.getVoltage()>.98)){
+        if((armVolt>ARMROTATEMAXVOLT)&&(stringPot.getVoltage()>.98) &&(armDif>0)){
             armMotor.setPower(0);
             return true;
         }
-        if((armVolt>ARMEXTENDEDMAXVOLT)||(armVolt<ARMROTATEMINVOLT)){
+        if((armVolt>ARMEXTENDEDMAXVOLT)&&(armDif>0)){
+            armMotor.setPower(0);
+            return true;
+        }
+        if((armVolt<ARMROTATEMINVOLT)&&(armDif<0)){
             armMotor.setPower(0);
             return true;
         }
@@ -585,30 +595,88 @@ final double ARMROTATE0POSITION = 0.604;
             while(!armAsync(ARMROTATE0POSITION)) {
 
             }
-            //setFlipperPosition(1);
+            while (!(stringAsync(VOLTSSTRINGUP))) {
+
+            }
+            setFlipperPosition(1);
+            sleep(1500);
             while (!(stringAsync(VOLTSSTRINGDOWN))) {
 
             }
             finger.setPosition(servoPositions[1]);
 
         }
-        protected void pixelPlaceAuto(Location location) {
+        protected void pixelPlaceAuto(Location location,boolean isRight) {
+        if (isRight) {
             if (location == Location.CENTER) {
                 setFlipperPosition(1);
                 //stringAsync();
 //            armAsync();
-                while(!armAsync(0.6)) {
+                while (!armAsync(0.6)) {
 
                 }
-            while (!(stringAsync(VOLTSSTRINGUP))) {
+                while (!(stringAsync(VOLTSSTRINGUP))) {
+                }
+                while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
+                    armFlipper.setPosition(-1);
+                }
+
+                sleep(1000);
+                finger.setPosition(1);
+
+            } else if (location == Location.LEFT) {
+                setFlipperPosition(1);
+                //stringAsync();
+//            armAsync();
+                while (!armAsync(0.6)) {
+
+                }
+                while (!(stringAsync(VOLTSSTRINGUP))) {
+                }
+                while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
+                    armFlipper.setPosition(-1);
+                }
+
+                sleep(1000);
+                finger.setPosition(1);
+
+            } else {
+                setFlipperPosition(1);
+                // stringAsync();
+                // armAsync();
+                while (!armAsync(0.6)) {
+
+                }
+                while (!(stringAsync(VOLTSSTRINGUP))) {
+
+                }
+                while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
+                    armFlipper.setPosition(-1);
+                }
+                sleep(1000);
+                finger.setPosition(1);
+
+            }
+
+        }
+        //Right
+        else{
+            if (location == Location.CENTER) {
+                setFlipperPosition(1);
+                //stringAsync();
+//            armAsync();
+                while (!armAsync(0.6)) {
+
+                }
+                while (!(stringAsync(VOLTSSTRINGUP))) {
 
                 }
                 armFlipper.setPosition(-1);
-            while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
+                while (!(armAsync(ARMROTATEMINVOLT))) {
 
                 }
 
-            sleep(500);
+                sleep(500);
                 finger.setPosition(1);
             } else if (location == Location.LEFT) {
                 setFlipperPosition(1);
@@ -621,7 +689,7 @@ final double ARMROTATE0POSITION = 0.604;
 
                 }
                 armFlipper.setPosition(-1);
-                while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
+                while (!(armAsync(ARMROTATEMINVOLT))) {
 
                 }
                 sleep(500);
@@ -637,14 +705,13 @@ final double ARMROTATE0POSITION = 0.604;
 
                 }
                 armFlipper.setPosition(-1);
-                while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
+                while (!(armAsync(ARMROTATEMINVOLT))) {
 
                 }
                 sleep(500);
                 finger.setPosition(1);
-        }
-
-
+            }
+            }
         }
 
     // comment #2

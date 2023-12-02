@@ -37,9 +37,14 @@ public class AutoBlueLeft extends StarterAuto {
                 while (!driveToPointAsync(new Pose(12, 63, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
-                while (!driveToPointAsync(new Pose(60, 60, Math.PI), true)) {
+                while (!driveToPointAsync(new Pose(45, 60, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
+                turnRobot(-Math.PI/2);
+                while (!driveToPointAsync(new Pose(61, 60, Math.PI/2), true)) {
+                    asyncPositionCorrector();
+                }
+                pixelPlaceAuto(Location.CENTER,true);
 
             // rotate and then move or spline under gate past E towards center of backdrop
         }
@@ -55,9 +60,11 @@ public class AutoBlueLeft extends StarterAuto {
                 while (!driveToPointAsync(new Pose(12, 40, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
-                while (!driveToPointAsync(new Pose(60, 60, Math.PI), true)) {
+            turnRobot(Math.PI/2);
+                while (!driveToPointAsync(new Pose(61, 60, Math.PI/2), true)) {
                     asyncPositionCorrector();
                 }
+            pixelPlaceAuto(Location.RIGHT,true);
 
 
         }
@@ -70,23 +77,11 @@ public class AutoBlueLeft extends StarterAuto {
                 while (!driveToPointAsync(new Pose(25.5, 60, Math.PI), true)) {
                     asyncPositionCorrector();
                 }
-                while (!driveToPointAsync(new Pose(60, 60, Math.PI), true)) {
+            turnRobot(Math.PI/2);
+                while (!driveToPointAsync(new Pose(61, 60, Math.PI/2), true)) {
                     asyncPositionCorrector();
                 }
-        }
-
-        while(opModeIsActive() && !done) {
-
-        packet.put("Field Pose",fieldPose);
-            packet.put("velocity Pose",velocityPose.angle);
-            dashboard.sendTelemetryPacket(packet);
-        }
-        while(opModeIsActive()){
-            asyncPositionCorrector();
-            //done = driveToPoint(new Pose(96,48,0),true);
-            while(driveToPointAsync(new Pose(12,30,Math.PI),true)){
-                asyncPositionCorrector();
-            }
+            pixelPlaceAuto(Location.LEFT,true);
         }
         //turnRobot(Math.PI/2);
     }

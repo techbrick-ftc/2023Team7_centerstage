@@ -13,55 +13,24 @@ public class AutoDrive extends StarterAuto {
     @Override
     public void runOpMode() {
 
-        initialize(new Pose(0, 0, 0));
-        waitForStart();
-        zeroAngle = getCurrentPose().angle;
+        initialize(new Pose(-36,64,0));
         long currentTime = System.nanoTime();
         long previousTime = System.nanoTime();
         boolean done = false;
-        int pos1X = 124;
-        int pos1Y = 310;
-        int pos2X = 392;
-        int pos2Y = 262;
-        int pos3X = 660;
-        int pos3Y = 278;
-        Point[] points = {new Point(pos1X, pos1Y), new Point(pos2X, pos2Y), new Point(pos3X, pos3Y)};
 
 
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
         waitForStart();
-        // detect the colour (positions are estimates)
-        //robot is about 16 inches long
-
-        //while(opModeIsActive() && !done) {
-
-        //frontLeft.setPower(1);
-        //frontRight.setPower(1);
-        //backLeft.setPower(1);
-        //backRight.setPower(1);
-        //intakeMotor.setPower(-.3);
-//            packet.put("velocity Pose",velocityPose.angle);
-
-        //}
-
-//        done = armAsync(ARMROTATE0POSITION);
-//        while (opModeIsActive() && !done) {
-//            done = armAsync(ARMROTATE0POSITION);
+//        returnArm();
+//        sleep(1000);
+//        pixelPlaceAuto(Location.CENTER,true);
+//        //stringMotor.setPower(.2);
+//        while(!driveToPointAsync(new Pose(-36,64,Math.PI),true)){
+//            asyncPositionCorrector();
 //        }
-////        done = stringAsync(1);
-////        while (opModeIsActive() && !done) {
-////            done = stringAsync(1);
-////        }
-//        while(!stringAsync(VOLTSSTRINGUP+.05)){
-//
-//        }
-        pixelPlaceAuto(Location.CENTER);
-        sleep(3000);
-        returnArm();
-        //stringMotor.setPower(.2);
         while (opModeIsActive()) {
             //ColorDetector colorDetector = new ColorDetector(points, 10, 10, false, hardwareMap);
-
+            asyncPositionCorrector();
             //asyncPositionCorrector();
             TelemetryPacket packet = new TelemetryPacket();
 //            packet.put("String", stringPot.getVoltage());
@@ -72,6 +41,11 @@ public class AutoDrive extends StarterAuto {
             //armFlipper.setPosition(-1); puts flipper up
 //          sleep(3000);
 //        intakeMotor.setPower(0);
+           // turnRobot(Math.PI/2);
+//            sleep(1500);
+//            returnArm();
+            //turnRobot(Math.PI/2);
+            asyncPositionCorrector();
                 packet.put("armpot",armPot.getVoltage());
                 packet.put("stringpot",stringPot.getVoltage());
                 packet.put("Field Pose", fieldPose);
