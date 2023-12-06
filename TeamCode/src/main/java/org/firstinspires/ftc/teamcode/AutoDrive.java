@@ -13,7 +13,7 @@ public class AutoDrive extends StarterAuto {
     @Override
     public void runOpMode() {
 
-        initialize(new Pose(-36,64,0));
+        initialize(new Pose(0,0,0));
         long currentTime = System.nanoTime();
         long previousTime = System.nanoTime();
         boolean done = false;
@@ -21,9 +21,10 @@ public class AutoDrive extends StarterAuto {
 
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
         waitForStart();
-//        returnArm();
+//        turnRobot(Math.PI/4);
+//        driveToPoint(new Pose(0,10,Math.PI/4),true);
 //        sleep(1000);
-//        pixelPlaceAuto(Location.CENTER,true);
+       // pixelPlaceAuto(Location.CENTER,true);
 //        //stringMotor.setPower(.2);
 //        while(!driveToPointAsync(new Pose(-36,64,Math.PI),true)){
 //            asyncPositionCorrector();
@@ -41,13 +42,15 @@ public class AutoDrive extends StarterAuto {
             //armFlipper.setPosition(-1); puts flipper up
 //          sleep(3000);
 //        intakeMotor.setPower(0);
-           // turnRobot(Math.PI/2);
+        turnRobot(-Math.PI/4);
+        driveToPoint(new Pose(10,20,-Math.PI/4),true);
 //            sleep(1500);
 //            returnArm();
             //turnRobot(Math.PI/2);
             asyncPositionCorrector();
                 packet.put("armpot",armPot.getVoltage());
                 packet.put("stringpot",stringPot.getVoltage());
+                packet.put("lifter",lifterMotor.getCurrentPosition());
                 packet.put("Field Pose", fieldPose);
                 //packet.put("location?", colorDetector.location);
                 dashboard.sendTelemetryPacket(packet);

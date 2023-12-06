@@ -249,8 +249,8 @@ final double ARMROTATE0POSITION = 0.604;
         Pose diff = new Pose(target.x - cur.x, target.y - cur.y, wrap((target.angle) - (cur.angle))); // difference in points
         packet.put("Diff", diff);
         // uses angles to find rotated X and Y
-        double rotX = diff.x * Math.cos(cur.angle) - diff.y * Math.sin(cur.angle);
-        double rotY = diff.x * Math.sin(cur.angle) + diff.y * Math.cos(cur.angle);
+        double rotX = diff.x * Math.cos(-cur.angle) - diff.y * Math.sin(-cur.angle);
+        double rotY = diff.x * Math.sin(-cur.angle) + diff.y * Math.cos(-cur.angle);
         double denom = Math.max(Math.abs(rotX), Math.abs(rotY));
         if (denom != 0) {
             rotX = rotX / denom;
@@ -272,12 +272,17 @@ final double ARMROTATE0POSITION = 0.604;
 //        packet.put("fronrightPower",frontRightPower);
 //        packet.put("backrightpower",backRightPower);
 //        packet.put("backleftPower",backLeftPower);
+//        if(Math.abs(target.angle)==Math.PI/2){NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+//            frontLeftPower*=-1;
+//            frontRightPower*=-1;
+//            backLeftPower*=-1;
+//            backRightPower*=-1;
+//        }
         setPower(frontRight, frontRightPower, "frontRight");
         setPower(frontLeft, frontLeftPower, "frontLeft");
         setPower(backRight, backRightPower, "backRight");
         setPower(backLeft, backLeftPower, "backLeft");
         packet.put("cur",cur);
-
         dashboard.sendTelemetryPacket(packet);
         if (multiplier == 0) {
             return true;
@@ -592,34 +597,56 @@ final double ARMROTATE0POSITION = 0.604;
             armFlipper.setPosition(position);
         }
         protected void returnArm(){
-            while(!armAsync(ARMROTATE0POSITION)) {
-
+            while((!armAsync(ARMROTATE0POSITION))&&opModeIsActive()){
+                armFlipper.setPosition(.5);
             }
-            while (!(stringAsync(VOLTSSTRINGUP))) {
+            while (!(stringAsync(VOLTSSTRINGUP))&&opModeIsActive()) {
 
             }
             setFlipperPosition(1);
             sleep(1500);
-            while (!(stringAsync(VOLTSSTRINGDOWN))) {
+            while (!(stringAsync(VOLTSSTRINGDOWN))&&opModeIsActive()) {
+
+            }
+                while((!armAsync(ARMROTATEMINVOLT))&&opModeIsActive()) {
 
             }
             finger.setPosition(servoPositions[1]);
+        }
+        protected boolean lifterTicksAsync(int targTicks){
+        //-10037 40 degrees
+            //167 0 degrees
+            //pos power pos ticks
+            int difTicks = targTicks - lifterMotor.getCurrentPosition();
+            if(Math.abs(difTicks)<350){
+                lifterMotor.setPower(0);
+                return(true);
+            }
+            if(difTicks<0){
+                lifterMotor.setPower(-1);
+                return(false);
+            }
+            else{lifterMotor.setPower(1);
+            return(false);
+            }
 
         }
+
         protected void pixelPlaceAuto(Location location,boolean isRight) {
         if (isRight) {
             if (location == Location.CENTER) {
                 setFlipperPosition(1);
                 //stringAsync();
 //            armAsync();
-                while (!armAsync(0.6)) {
+                while ((!armAsync(0.6))&&opModeIsActive()) {
 
                 }
-                while (!(stringAsync(VOLTSSTRINGUP))) {
+                while (!(stringAsync(VOLTSSTRINGUP))&&opModeIsActive()) {
                 }
-                while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
-                    armFlipper.setPosition(-1);
+                while (!(armAsync(ARMEXTENDEDMAXVOLT))&&opModeIsActive()) {
+                    armFlipper.setPosition(.4);
                 }
+                armFlipper.setPosition(-.92);
 
                 sleep(1000);
                 finger.setPosition(1);
@@ -628,14 +655,15 @@ final double ARMROTATE0POSITION = 0.604;
                 setFlipperPosition(1);
                 //stringAsync();
 //            armAsync();
-                while (!armAsync(0.6)) {
+                while ((!armAsync(0.6))&&opModeIsActive()) {
 
                 }
-                while (!(stringAsync(VOLTSSTRINGUP))) {
+                while (!(stringAsync(VOLTSSTRINGUP))&&opModeIsActive()) {
                 }
-                while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
-                    armFlipper.setPosition(-1);
+                while (!(armAsync(ARMEXTENDEDMAXVOLT))&&opModeIsActive()) {
+                    armFlipper.setPosition(.4);
                 }
+                armFlipper.setPosition(-.92);
 
                 sleep(1000);
                 finger.setPosition(1);
@@ -644,15 +672,22 @@ final double ARMROTATE0POSITION = 0.604;
                 setFlipperPosition(1);
                 // stringAsync();
                 // armAsync();
-                while (!armAsync(0.6)) {
+                while ((!armAsync(0.6))&&opModeIsActive()) {
 
                 }
-                while (!(stringAsync(VOLTSSTRINGUP))) {
+                while (!(stringAsync(VOLTSSTRINGUP))&&opModeIsActive()) {
 
                 }
-                while (!(armAsync(ARMEXTENDEDMAXVOLT))) {
-                    armFlipper.setPosition(-1);
+                armFlipper.setPosition(.4);
+                sleep(300);
+                while (!(stringAsync(VOLTSSTRINGDOWN))&&opModeIsActive()) {
+
                 }
+                while (!(armAsync(ARMROTATEMAXVOLT))&&opModeIsActive()) {
+
+                }
+                sleep(300);
+                armFlipper.setPosition(-.92);
                 sleep(1000);
                 finger.setPosition(1);
 
@@ -665,54 +700,61 @@ final double ARMROTATE0POSITION = 0.604;
                 setFlipperPosition(1);
                 //stringAsync();
 //            armAsync();
-                while (!armAsync(0.6)) {
+                while (!(armAsync(0.6))&&opModeIsActive()) {
 
                 }
-                while (!(stringAsync(VOLTSSTRINGUP))) {
+                while (!(stringAsync(VOLTSSTRINGUP))&&opModeIsActive()) {
+                }
+                while (!(armAsync(ARMROTATEMINVOLT))&&opModeIsActive()) {
+                    armFlipper.setPosition(.4);
 
                 }
-                armFlipper.setPosition(-1);
-                while (!(armAsync(ARMROTATEMINVOLT))) {
-
-                }
-
-                sleep(500);
+                armFlipper.setPosition(-.92);
+                sleep(1000);
                 finger.setPosition(1);
-            } else if (location == Location.LEFT) {
+
+            } else if (location == Location.RIGHT) {
                 setFlipperPosition(1);
-                // stringAsync();
-                // armAsync();
-                while (!armAsync(0.6)) {
+                //stringAsync();
+//            armAsync();
+                while (!armAsync(0.6)&&opModeIsActive()) {
 
                 }
-                while (!(stringAsync(VOLTSSTRINGDOWN))) {
+                while (!(stringAsync(VOLTSSTRINGUP))&&opModeIsActive()) {
+                }
+                while (!(armAsync(ARMROTATEMINVOLT)&&opModeIsActive())) {
+                    armFlipper.setPosition(.4);
 
                 }
-                armFlipper.setPosition(-1);
-                while (!(armAsync(ARMROTATEMINVOLT))) {
+                armFlipper.setPosition(-.92);
 
-                }
-                sleep(500);
+                sleep(1000);
                 finger.setPosition(1);
+
             } else {
                 setFlipperPosition(1);
                 // stringAsync();
                 // armAsync();
-                while (!armAsync(0.6)) {
+                while (!armAsync(0.6)&&opModeIsActive()) {
 
                 }
-                while (!(stringAsync(VOLTSSTRINGUP))) {
+                while (!(stringAsync(VOLTSSTRINGUP))&&opModeIsActive()) {
 
                 }
-                armFlipper.setPosition(-1);
-                while (!(armAsync(ARMROTATEMINVOLT))) {
+                armFlipper.setPosition(.4);
+                sleep(300);
+                while (!(stringAsync(VOLTSSTRINGDOWN))&&opModeIsActive()) {
 
                 }
-                sleep(500);
+                while (!(armAsync(ARMROTATEMINVOLT))&&opModeIsActive()) {
+
+                }
+                armFlipper.setPosition(-.92);
+                sleep(1000);
                 finger.setPosition(1);
+
             }
-            }
-        }
+        }}
 
     // comment #2
     @Override

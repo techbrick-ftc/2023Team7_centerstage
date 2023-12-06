@@ -21,7 +21,9 @@ public class MainTeleOp extends StarterAuto {
     @Override
     public void runOpMode() {
         TelemetryPacket packet = new TelemetryPacket();
+
         initialize(new Pose(0,0,0));
+
         double zeroAngle = 0;
         boolean speedMod = true;
         boolean fieldCentric = true;
@@ -39,6 +41,8 @@ public class MainTeleOp extends StarterAuto {
 
         zeroAngle = getCurrentPose().angle;
         while (opModeIsActive()) {
+            packet.put("lifter",lifterMotor.getCurrentPosition());
+            asyncPositionCorrector();
             try {
                 cur2.copy(gamepad2);
                 cur1.copy(gamepad1);
@@ -70,6 +74,7 @@ public class MainTeleOp extends StarterAuto {
             boolean armB = cur2.b;
             boolean armX = cur2.x;
             boolean armY = cur2.y;
+            boolean armDpadRight = cur2.dpad_right;
             boolean armDpadUp = cur2.dpad_up;
             boolean armDpadDown = cur2.dpad_down;
             boolean previousDriveA = previousGamepad1.a;
@@ -86,23 +91,28 @@ public class MainTeleOp extends StarterAuto {
             if (!speedMod) {
                 driveYleftStick = Range.clip(-gamepad1.left_stick_y, -0.4, 0.4);
                 driveXleftStick = Range.clip(gamepad1.left_stick_x, -0.4, 0.4);
-                rx = Range.clip(gamepad1.right_stick_x, -0.25, 0.25);
+                rx = -Range.clip(gamepad1.right_stick_x, -0.25, 0.25);
             } else {
                 driveYleftStick = Range.clip(-gamepad1.left_stick_y, -0.95, 0.95);
-                rx = Range.clip(gamepad1.right_stick_x, -0.75, 0.75);
+                rx = -Range.clip(gamepad1.right_stick_x, -0.75, 0.75);
             }
             packet.put("rx",rx);
+            packet.put("cur",fieldPose);
             // Read inverse IMU heading, as the IMU heading is CW positive
             double botHeading = -(current.angle - zeroAngle);
             if (driveY) {
                 zeroAngle = current.angle;
             }
+            if(armDpadRight) {
+
+            lifterTicksAsync(-10000);
+            }
             //Ask if we still want this or change be to be something useful
             if (driveB && !previousArmB) {
                 fieldCentric = !fieldCentric;
             }
-            if(driveA){
-                airplane.setPosition(1);
+            if(driveX){
+                airplane.setPosition(.5);
             }
             if (fieldCentric) {
                 rotX = driveXleftStick * Math.cos(botHeading) - driveYleftStick * Math.sin(botHeading);

@@ -24,6 +24,9 @@ public class AutoBlueRight extends StarterAuto {
         ColorDetector colorDetector = new ColorDetector(10, 10, false, hardwareMap);
         // We want to start the bot at x: -36, y: -60, heading: 0 (probably)
         waitForStart();
+        if(!opModeIsActive()){
+            return;
+        }
         colorDetector.closeCamera();
         dashboard.sendTelemetryPacket(packet);
         // detect the colour (positions are estimates)
@@ -31,73 +34,84 @@ public class AutoBlueRight extends StarterAuto {
         if (colorDetector.location == Location.CENTER) {
             packet.put("location", "center");
             dashboard.sendTelemetryPacket(packet);
-            while(!driveToPointAsync(new Pose(-36,38,Math.PI),true)){
+            while((!driveToPointAsync(new Pose(-36,38,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
             releasePixel();
-            while (opModeIsActive()) {
+            while((!driveToPointAsync(new Pose(-36,39 ,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
-            while(!driveToPointAsync(new Pose(-36,39 ,Math.PI),true)){
-                asyncPositionCorrector();
-            }
-            while(!driveToPointAsync(new Pose(-56,45 ,Math.PI),true)){
+            while((!driveToPointAsync(new Pose(-56,45 ,Math.PI),true))&&opModeIsActive()){
                     asyncPositionCorrector();
                 }
-            while(!driveToPointAsync(new Pose(-56,12,Math.PI),true)){
+            while((!driveToPointAsync(new Pose(-56,8,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
-            //turnRobot(-Math.PI/2);
-            while(!driveToPointAsync(new Pose(61,12,Math.PI/2),true)){
+            while((!driveToPointAsync(new Pose(60,8,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
-            pixelPlaceAuto(Location.CENTER,false);
+            while((!driveToPointAsync(new Pose(60,12,Math.PI),true))&&opModeIsActive()){
+                asyncPositionCorrector();
+            }
+            turnRobot(Math.PI/2);
+            pixelPlaceAuto(Location.CENTER,true);
+            sleep(1000);
+            returnArm();
 
             // rotate and then move or spline under gate past E towards center of backdrop
        }
         else if (colorDetector.location == Location.RIGHT) {
             packet.put("location", "right");
             dashboard.sendTelemetryPacket(packet);
-            while(!driveToPointAsync(new Pose(-48,40,Math.PI),true)){
-                asyncPositionCorrector();
+            while((!driveToPointAsync(new Pose(-48,40,Math.PI),true))&&opModeIsActive()){
+                    asyncPositionCorrector();
             }
             releasePixel();
-            while(!driveToPointAsync(new Pose(-60,40,Math.PI),true)){
+            while((!driveToPointAsync(new Pose(-60,40,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
-            while(!driveToPointAsync(new Pose(-60,12,Math.PI),true)){
+            while((!driveToPointAsync(new Pose(-60,8,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
-            turnRobot(Math.PI/2);
-            while(opModeIsActive()){asyncPositionCorrector();}
-            while(!driveToPointAsync(new Pose(61,12,Math.PI/2),true)){
+            while((!driveToPointAsync(new Pose(60,8,Math.PI),true))&&opModeIsActive()){
+                asyncPositionCorrector();
+            }
+            while((!driveToPointAsync(new Pose(60,10,Math.PI),true))&&opModeIsActive()){
                asyncPositionCorrector();
             }
-            pixelPlaceAuto(Location.RIGHT,false);
+            turnRobot(Math.PI/2);
+            pixelPlaceAuto(Location.RIGHT,true);
+            sleep(1000);
+            returnArm();
 
 
        }
         else{ //left, (-27, -45)
             packet.put("location", "left");
             dashboard.sendTelemetryPacket(packet);
-            while(!driveToPointAsync(new Pose(-36,40,Math.PI),true)){
+            while((!driveToPointAsync(new Pose(-36,39,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
-            while(!driveToPointAsync(new Pose(-22,40,Math.PI),true)){
+            while((!driveToPointAsync(new Pose(-23,39,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
             releasePixel();
-            while(!driveToPointAsync(new Pose(-36,40,Math.PI),true)){
+            while((!driveToPointAsync(new Pose(-36,39,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
            }
-            while(!driveToPointAsync(new Pose(-36,12,Math.PI),true)){
+            while((!driveToPointAsync(new Pose(-36,8  ,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
-            turnRobot(Math.PI/2);
-            while(!driveToPointAsync(new Pose(61,12,Math.PI/2),true)){
+            while((!driveToPointAsync(new Pose(60,8,Math.PI),true))&&opModeIsActive()){
+                asyncPositionCorrector();
+            }
+            while((!driveToPointAsync(new Pose(60,12,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
            }
-            pixelPlaceAuto(Location.LEFT,false);
+            turnRobot(Math.PI/2);
+            pixelPlaceAuto(Location.LEFT,true);
+            sleep(1000);
+            returnArm();
         }
 
     }
