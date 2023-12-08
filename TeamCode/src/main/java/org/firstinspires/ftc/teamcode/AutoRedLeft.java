@@ -35,24 +35,26 @@ public class AutoRedLeft extends StarterAuto {
 
                 }
                 releasePixel();
-                while((!driveToPointAsync(new Pose(-36,-39 ,0),true))&&opModeIsActive()){
+                while((!driveToPointAsync(new Pose(-36,-39 ,0),false))&&opModeIsActive()){
                     asyncPositionCorrector();
                 }
-                while((!driveToPointAsync(new Pose(-56,-45,0),true))&&opModeIsActive()){
+                while((!driveToPointAsync(new Pose(-53,-39,0),false))&&opModeIsActive()){
                     asyncPositionCorrector();
                 }
-                while((!driveToPointAsync(new Pose(-56,-8,0),true))&&opModeIsActive()){
+                while((!driveToPointAsync(new Pose(-53,-11,0),true))&&opModeIsActive()){
                     asyncPositionCorrector();
                 }
-            while((!driveToPointAsync(new Pose(61,-10,0),true))&&opModeIsActive()){
+                while((!driveToPointAsync(new Pose(-5,-11,Math.PI/2),false))&&opModeIsActive()){
+                    asyncPositionCorrector();
+                }
+            while((!driveToPointAsync(new Pose(61,-11,Math.PI/2),true))&&opModeIsActive()){
                 asyncPositionCorrector();
-            }
-                while((!driveToPointAsync(new Pose(61,-11,0),true))&&opModeIsActive()){
-                    asyncPositionCorrector();
+                if(armAsync(0.6)){
+                    stringAsync(VOLTSSTRINGUP);
                 }
-            turnRobot(Math.PI/2);
+            }
             pixelPlaceAuto(Location.CENTER,false);
-            sleep(1000);
+            sleep(400);
             returnArm();
 
                 // rotate and then move or spline under gate past E towards center of backdrop
@@ -73,7 +75,7 @@ public class AutoRedLeft extends StarterAuto {
                 }
             turnRobot(Math.PI/2);
             pixelPlaceAuto(Location.LEFT,false);
-            sleep(1000);
+            sleep(400);
             returnArm();
 
             }
@@ -96,10 +98,28 @@ public class AutoRedLeft extends StarterAuto {
                 }
             turnRobot(Math.PI/2);
             pixelPlaceAuto(Location.CENTER,false);
-            sleep(1000);
+            sleep(400);
             returnArm();
             }
+//        while((!driveToPointAsync(new Pose(-56,-11,Math.PI/2),true))&&opModeIsActive()){
+//            asyncPositionCorrector();
+//        }
+//        intakeMotor.setPower(.4);
+        while((!driveToPointAsync(new Pose(-58.5,-11,Math.PI/2),true))&&opModeIsActive()){
+            asyncPositionCorrector();
         }
+        turnRobot(Math.PI/8);
+        turnRobot(Math.PI/2);
+        Forward();
+        intakeMotor.setPower(.6);
+        sleep(200);
+        motorsStop();
+        while((!driveToPointAsync(new Pose(58,-11,-Math.PI/2),true))&&opModeIsActive()){
+            asyncPositionCorrector();
+        }
+        intakeMotor.setPower(0);
+        }
+
     }
 
 

@@ -38,7 +38,7 @@ public class AutoBlueRight extends StarterAuto {
                 asyncPositionCorrector();
             }
             releasePixel();
-            while((!driveToPointAsync(new Pose(-36,39 ,Math.PI),true))&&opModeIsActive()){
+            while((!driveToPointAsync(new Pose(-36,39 ,Math.PI),false))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
             while((!driveToPointAsync(new Pose(-56,45 ,Math.PI),true))&&opModeIsActive()){
@@ -47,10 +47,8 @@ public class AutoBlueRight extends StarterAuto {
             while((!driveToPointAsync(new Pose(-56,8,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
-            while((!driveToPointAsync(new Pose(60,8,Math.PI),true))&&opModeIsActive()){
-                asyncPositionCorrector();
-            }
-            while((!driveToPointAsync(new Pose(60,12,Math.PI),true))&&opModeIsActive()){
+            turnRobot(Math.PI/2);
+            while((!driveToPointAsync(new Pose(60,12,Math.PI/2),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
             turnRobot(Math.PI/2);

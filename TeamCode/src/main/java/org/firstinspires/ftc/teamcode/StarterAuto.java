@@ -360,6 +360,11 @@ final double ARMROTATE0POSITION = 0.604;
         sleep(1000);
         intakeMotor.setPower(0);
     }
+    public void unReleasePixel(){
+        intakeMotor.setPower(.4);
+        sleep(1000);
+        intakeMotor.setPower(0);
+    }
 
     private double positiveWrap(double theta) {
         double newTheta = theta;
@@ -604,7 +609,7 @@ final double ARMROTATE0POSITION = 0.604;
 
             }
             setFlipperPosition(1);
-            sleep(1500);
+            sleep(500);
             while (!(stringAsync(VOLTSSTRINGDOWN))&&opModeIsActive()) {
 
             }
@@ -631,6 +636,12 @@ final double ARMROTATE0POSITION = 0.604;
             }
 
         }
+        protected void Forward(){
+        frontLeft.setPower(.5);
+        frontRight.setPower(.5);
+        backLeft.setPower(.5);
+        backRight.setPower(.5);
+        }
 
         protected void pixelPlaceAuto(Location location,boolean isRight) {
         if (isRight) {
@@ -648,7 +659,7 @@ final double ARMROTATE0POSITION = 0.604;
                 }
                 armFlipper.setPosition(-.92);
 
-                sleep(1000);
+                sleep(400);
                 finger.setPosition(1);
 
             } else if (location == Location.LEFT) {
@@ -665,7 +676,7 @@ final double ARMROTATE0POSITION = 0.604;
                 }
                 armFlipper.setPosition(-.92);
 
-                sleep(1000);
+                sleep(400);
                 finger.setPosition(1);
 
             } else {
@@ -688,7 +699,7 @@ final double ARMROTATE0POSITION = 0.604;
                 }
                 sleep(300);
                 armFlipper.setPosition(-.92);
-                sleep(1000);
+                sleep(400);
                 finger.setPosition(1);
 
             }
@@ -710,7 +721,7 @@ final double ARMROTATE0POSITION = 0.604;
 
                 }
                 armFlipper.setPosition(-.92);
-                sleep(1000);
+                sleep(400);
                 finger.setPosition(1);
 
             } else if (location == Location.RIGHT) {
@@ -728,7 +739,7 @@ final double ARMROTATE0POSITION = 0.604;
                 }
                 armFlipper.setPosition(-.92);
 
-                sleep(1000);
+                sleep(400);
                 finger.setPosition(1);
 
             } else {
@@ -750,7 +761,7 @@ final double ARMROTATE0POSITION = 0.604;
 
                 }
                 armFlipper.setPosition(-.92);
-                sleep(1000);
+                sleep(400);
                 finger.setPosition(1);
 
             }
