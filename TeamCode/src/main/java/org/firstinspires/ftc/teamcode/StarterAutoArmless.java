@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static java.lang.Math.abs;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -23,6 +25,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
+import org.opencv.core.Point;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -65,24 +68,9 @@ Expansion Hub:
 
 
  */
-class Pose {
-    Pose(double x, double y, double a) {
-        this.x = x;
-        this.y = y;
-        angle = a;
-    }
 
-    public double x;
-    public double y;
 
-    public double angle;
-
-    public String toString() {
-        return "Pose(X = " + x + ", Y = " + y + ", Angle in Radians = " + angle + ", Angle in Degrees = " + Math.toDegrees(angle) + ")";
-    }
-}
-
-public class StarterAuto extends LinearOpMode {
+public class StarterAutoArmless extends LinearOpMode {
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
     /**
@@ -96,18 +84,12 @@ public class StarterAuto extends LinearOpMode {
     private VisionPortal visionPortal;
     final double ARMROTATEMAXVOLT = 1.1;//actually 1.102;
     final double ARMEXTENDEDMAXVOLT = 1.115;
-final double ARMROTATE0POSITION = 0.604;
+    final double ARMROTATE0POSITION = 0.604;
     final double ARMROTATEMINVOLT = 0.191;//actually .084; then why not put .084? - Aidan
 
     final double VOLTSSTRINGUP = .935;
     final double VOLTSSTRINGDOWN = 1.335;// fiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiind!
     double lastTime;
-    double oldTimeDecel;
-    double currentTime;
-    double oldTimeDriveTo;
-
-    double timeStopped = 0;
-    double timeStoppedDecel = 0;
     double startDecel = 30;
 
     double stopDecel = .5;
@@ -117,7 +99,11 @@ final double ARMROTATE0POSITION = 0.604;
     double zeroAngle = 0;
     double ticksPerRadian = 28.58 * (360 / (Math.PI * 2)); // found 28.58 by using testangular method to find ratio of ticks to radian
     public double inPerTick = 20 / 6786.0;
-
+    static final double FEET_PER_METER = 3.28084;
+    final float DECIMATION_HIGH = 3;
+    final float DECIMATION_LOW = 2;
+    final float THRESHOLD_HIGH_DECIMATION_RANGE_METERS = 1.0f;
+    final int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
     public final FtcDashboard dashboard = FtcDashboard.getInstance();
     //Yellow and Control Port 3
     public DcMotorEx frontLeft;
@@ -182,7 +168,7 @@ final double ARMROTATE0POSITION = 0.604;
             return;
         }
         Pose current = getCurrentPose();
-        currentTime = System.currentTimeMillis() / 1000.0;
+        double currentTime = System.currentTimeMillis() / 1000.0;
         double achange = current.angle - lastPose.angle;
         double xchange = current.x - lastPose.x;
         double ychange = current.y - lastPose.y;
@@ -216,9 +202,7 @@ final double ARMROTATE0POSITION = 0.604;
     public void setPower(DcMotor motor, double targetPower, String name) {
         TelemetryPacket packet = new TelemetryPacket();
         double currentPower = motor.getPower();
-        double velocityVector = Math.pow((Math.pow(velocityPose.x,2)+Math.pow(velocityPose.y,2)),.5);
-        //create state machine just in here to track how long your trying to speed up or go abckwards or whatever and to track time youve been in that
-        if (Math.abs(targetPower) - .1 > Math.abs(currentPower)) {
+        if (abs(targetPower) - .1 > abs(currentPower)) {
 
             double powerChange = 0.0125 * Math.signum(targetPower); // Adjust power based on the sign of targetPower
 
@@ -231,7 +215,7 @@ final double ARMROTATE0POSITION = 0.604;
             motor.setPower(newPower);
             packet.put(name, newPower);
         } else {
-            if (Math.abs(targetPower) > 0 && Math.abs(targetPower) < 0.2) {
+            if (abs(targetPower) > 0 && abs(targetPower) < 0.2) {
                 targetPower = Math.signum(targetPower) * .2;
             }
             motor.setPower(targetPower);
@@ -264,29 +248,21 @@ final double ARMROTATE0POSITION = 0.604;
     }
 
     public boolean driveToPointAsync(Pose target, boolean slowDown) {
-
+        Point temp = new Point(0,0);
         TelemetryPacket packet = new TelemetryPacket();
         Pose cur = fieldPose; // our current poe
         Pose diff = new Pose(target.x - cur.x, target.y - cur.y, wrap((target.angle) - (cur.angle))); // difference in points
         packet.put("Diff", diff);
-        if(Math.pow(diff.x*diff.x+diff.y*diff.y,.5)>6&&Math.pow(velocityPose.x*velocityPose.x+velocityPose.y*velocityPose.y,.5)<1){
-            timeStopped += System.currentTimeMillis()-oldTimeDriveTo;
-        }
-        else{
-            timeStopped=0;
-        }
-        oldTimeDriveTo=System.currentTimeMillis();
-        // diff is difference in position and cur is current position
         // uses angles to find rotated X and Y
         double rotX = diff.x * Math.cos(-cur.angle) - diff.y * Math.sin(-cur.angle);
         double rotY = diff.x * Math.sin(-cur.angle) + diff.y * Math.cos(-cur.angle);
-        double denom = Math.max(Math.abs(rotX), Math.abs(rotY));
+        double denom = Math.max(abs(rotX), abs(rotY));
         if (denom != 0) {
             rotX = rotX / denom;
             rotY = rotY / denom;
         }
         double angleFactor = diff.angle;
-        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(angleFactor), 1);
+        double denominator = Math.max(abs(rotY) + abs(rotX) + abs(angleFactor), 1);
         // Denominator is the largest motor power (absolute value) or 1
         // This ensures all the powers maintain the same ratio, but only when
         // at least one is out of the range [-1, 1]
@@ -307,15 +283,6 @@ final double ARMROTATE0POSITION = 0.604;
 //            backLeftPower*=-1;
 //            backRightPower*=-1;
 //        }
-        if(timeStopped>5000){
-            frontRight.setPower(-frontRightPower);
-            frontLeft.setPower(-frontLeftPower);
-            backRight.setPower(-backRightPower);
-            backLeft.setPower(-backLeftPower);
-            sleep(1500);
-            timeStopped=0;
-            return false;
-        }
         setPower(frontRight, frontRightPower, "frontRight");
         setPower(frontLeft, frontLeftPower, "frontLeft");
         setPower(backRight, backRightPower, "backRight");
@@ -345,20 +312,10 @@ final double ARMROTATE0POSITION = 0.604;
 
     protected double deceleration(boolean slow, double rotX, double rotY, double angleDiff) {
         boolean slowDown = slow;
-
         double angleConstant = .1 / (10 * (Math.PI * 2) / 360);
         double d = Math.sqrt(((rotX * rotX) + (rotY * rotY)));// + Math.abs(angleDiff * angleConstant); Accounting for angle with distance
-        double velocityVector = Math.pow((Math.pow(velocityPose.x,2)+Math.pow(velocityPose.y,2)),.5);
-        if(velocityVector < 1){
-            timeStoppedDecel+= currentTime - oldTimeDecel;
-        }
-        else{
-            timeStoppedDecel=0;
-        }
-        if(timeStoppedDecel>5000){
-            timeStoppedDecel=5000;
-        }
-        oldTimeDecel = currentTime;
+
+
         if ((d <= stopDecel)) {
             return 0;
         }
@@ -370,10 +327,7 @@ final double ARMROTATE0POSITION = 0.604;
                 double powerLinear = (((1 - minimumPower) / (startDecel - stopDecel)) * (d - stopDecel) + minimumPower);
                 //will want to change velocityRatio to a real algorithm
                 double velocityRatio = (Math.sqrt((velocityPose.x * velocityPose.x) + (velocityPose.y * velocityPose.y)) / maxVelocity);
-                if(((powerLinear - velocityRatio)*((5000+timeStoppedDecel)/5000))<1){
-                    return((powerLinear - velocityRatio)*((5000+timeStoppedDecel)/5000));
-                }
-                return(1);
+                return (powerLinear - velocityRatio);
             }
 //           else if (targetspeed - speed > 0.02) {
 //                //Motors would get faster
@@ -397,7 +351,7 @@ final double ARMROTATE0POSITION = 0.604;
 
     private double wrap(double theta) {
         double newTheta = theta;
-        while (Math.abs(newTheta) > Math.PI) {
+        while (abs(newTheta) > Math.PI) {
             if (newTheta < -Math.PI) {
                 newTheta += Math.PI * 2;
             } else {
@@ -430,17 +384,11 @@ final double ARMROTATE0POSITION = 0.604;
 
 
     protected void initialize(Pose inputPose) {
-            frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");   // C3
-            backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");     // C0
-            frontRight = hardwareMap.get(DcMotorEx.class, "frontRight"); // C2
-            backRight = hardwareMap.get(DcMotorEx.class, "backRight");   // C1
-            lifterMotor = hardwareMap.get(DcMotor.class, "lifter");    // E0
-            intakeMotor = hardwareMap.get(DcMotor.class, "intake");      // E1
-            stringMotor = hardwareMap.get(DcMotor.class,"stringMotor");  // E3
-            armMotor = hardwareMap.get(DcMotor.class,"arm");             // E2
-            armPot = hardwareMap.get(AnalogInput.class,"shoulderPot");   // C0
-            stringPot = hardwareMap.get(AnalogInput.class,"stringPot");  // C3
-
+        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");   // C3
+        backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");     // C0
+        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight"); // C2
+        backRight = hardwareMap.get(DcMotorEx.class, "backRight");   // C1
+        intakeMotor = hardwareMap.get(DcMotor.class, "intake");
 
 
         deadLeft = hardwareMap.get(DcMotorEx.class, "backRight");   // C1
@@ -455,21 +403,17 @@ final double ARMROTATE0POSITION = 0.604;
         backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
-            colorFR = hardwareMap.colorSensor.get("colorFR");
-            colorFL = hardwareMap.colorSensor.get("colorFL");
-            colorBR = hardwareMap.colorSensor.get("colorBR");
-            colorBL = hardwareMap.colorSensor.get("colorBL");
-            armFlipper = hardwareMap.servo.get("armFlipper");
-            finger = hardwareMap.servo.get("finger");
-            airplane = hardwareMap.servo.get("airplane");//expansion hub port 1 servo
-        finger.setPosition(servoPositions[1]); //servoPositions[2]
-            imu = hardwareMap.get(IMU.class, "imu");
-            backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-            backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        colorFR = hardwareMap.colorSensor.get("colorFR");
+        colorFL = hardwareMap.colorSensor.get("colorFL");
+        colorBR = hardwareMap.colorSensor.get("colorBR");
+        colorBL = hardwareMap.colorSensor.get("colorBL");
+        imu = hardwareMap.get(IMU.class, "imu");
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         telemetry.update();
 
@@ -485,15 +429,15 @@ final double ARMROTATE0POSITION = 0.604;
         TelemetryPacket packet = new TelemetryPacket();
         double difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
         double directionalSpeed;
-        while (opModeIsActive() && !(Math.abs(difAngle) < Math.toRadians(2))) {
+        while (opModeIsActive() && !(abs(difAngle) < Math.toRadians(2))) {
             asyncPositionCorrector();
             difAngle = wrap(positiveWrap(angle) - positiveWrap(fieldPose.angle));
             directionalSpeed = -Math.signum(difAngle) * 0.5;
             packet.put("difangle", difAngle);
             dashboard.sendTelemetryPacket(packet);
-            if (Math.abs(difAngle) < 0.08 * Math.PI) {
+            if (abs(difAngle) < 0.08 * Math.PI) {
                 directionalSpeed *= 0.25;
-            } else if (Math.abs(difAngle) < 0.15 * Math.PI) {
+            } else if (abs(difAngle) < 0.15 * Math.PI) {
                 directionalSpeed *= 0.4;
             }
 
@@ -510,14 +454,14 @@ final double ARMROTATE0POSITION = 0.604;
         setPower(frontLeft, 0, "frontLeft");
         setPower(frontRight, 0, "frontRight");
     }
-        protected void imuAngle () {
-            telemetry.addData("IMU Angle", getCurrentPose().angle);
-            telemetry.update();
+    protected void imuAngle () {
+        telemetry.addData("IMU Angle", getCurrentPose().angle);
+        telemetry.update();
 
-            TelemetryPacket packet = new TelemetryPacket();
-            packet.put("IMU Angle", getCurrentPose().angle);
-            dashboard.sendTelemetryPacket(packet);
-        }
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("IMU Angle", getCurrentPose().angle);
+        dashboard.sendTelemetryPacket(packet);
+    }
     protected boolean armAsync(double targVolt){
         double armVolt = armPot.getVoltage();
         double armDif = targVolt - armVolt;
@@ -542,11 +486,11 @@ final double ARMROTATE0POSITION = 0.604;
             armMotor.setPower(0);
             return true;
         }
-        if (Math.abs(armDif) < .05){
+        if (abs(armDif) < .05){
             armMotor.setPower(0);
             return true;
         }
-        if (Math.abs(armDif) < .1){
+        if (abs(armDif) < .1){
             multi = multi*.5;
         }
         if (armDif > 0){
@@ -569,9 +513,9 @@ final double ARMROTATE0POSITION = 0.604;
         packet.put("stringDif",armDif);
         packet.put("currentVolt",stringPot.getVoltage());
         packet.put("targVoltString",targVolt);
-        if(Math.abs(ARMROTATE0POSITION-armPot.getVoltage()) > .98){
+        if(abs(ARMROTATE0POSITION-armPot.getVoltage()) > .98){
             stringMotor.setPower(0);
-            packet.put("armDif",Math.abs(ARMROTATE0POSITION-armPot.getVoltage()));
+            packet.put("armDif", abs(ARMROTATE0POSITION-armPot.getVoltage()));
             dashboard.sendTelemetryPacket(packet);
             return true;
         }
@@ -587,12 +531,12 @@ final double ARMROTATE0POSITION = 0.604;
 //            dashboard.sendTelemetryPacket(packet);
 //            return true;
 //        }
-        if (Math.abs(armDif) < .02){
+        if (abs(armDif) < .02){
             stringMotor.setPower(0);
             dashboard.sendTelemetryPacket(packet);
             return true;
         }
-        if (Math.abs(armDif) < .1){
+        if (abs(armDif) < .1){
             multi = multi*.5;
         }
         if (armDif < 0){
@@ -608,93 +552,93 @@ final double ARMROTATE0POSITION = 0.604;
     }
 
 
-        protected void armMove ( double leftStickX){
-            armMotor.setPower(leftStickX);
+    protected void armMove ( double leftStickX){
+        armMotor.setPower(leftStickX);
+    }
+    protected void lift(boolean DpadUpPressed,boolean previousDpadUpPressed, boolean DpadDownPressed, boolean previousDpadDownPressed){
+        if(DpadUpPressed && previousDpadUpPressed){
+            lifterMotor.setPower(1);
         }
-        protected void lift(boolean DpadUpPressed,boolean previousDpadUpPressed, boolean DpadDownPressed, boolean previousDpadDownPressed){
-            if(DpadUpPressed && previousDpadUpPressed){
-                lifterMotor.setPower(1);
-            }
-            else if(DpadDownPressed && previousDpadDownPressed){
-                lifterMotor.setPower(-1);
-            }
-            else{
-                lifterMotor.setPower(0);
-            }
+        else if(DpadDownPressed && previousDpadDownPressed){
+            lifterMotor.setPower(-1);
         }
-        protected void setFinger(double degree){
-            finger.setPosition(degree);
+        else{
+            lifterMotor.setPower(0);
         }
+    }
+    protected void setFinger(double degree){
+        finger.setPosition(degree);
+    }
 
-        protected void flipArm(double rightStickY){
+    protected void flipArm(double rightStickY){
         double flipperConstant = 10;
-            if(flipperPosition<2){
-                if(rightStickY<0.1){
-                    armFlipper.setPosition(flipperPosition);
-                }
-                else if(rightStickY>0.1){
-                    armFlipper.setPosition(flipperPosition+=rightStickY*flipperConstant);
-                }
+        if(flipperPosition<2){
+            if(rightStickY<0.1){
+                armFlipper.setPosition(flipperPosition);
+            }
+            else if(rightStickY>0.1){
+                armFlipper.setPosition(flipperPosition+=rightStickY*flipperConstant);
+            }
 
+        }
+        else if(flipperPosition>178){
+            if(rightStickY>0.1){
+                armFlipper.setPosition(flipperPosition);
             }
-            else if(flipperPosition>178){
-                if(rightStickY>0.1){
-                    armFlipper.setPosition(flipperPosition);
-                }
-                else if(rightStickY<0.1){
-                    armFlipper.setPosition(flipperPosition+=rightStickY*flipperConstant);
-                }
-            }
-            else{
+            else if(rightStickY<0.1){
                 armFlipper.setPosition(flipperPosition+=rightStickY*flipperConstant);
             }
         }
-        protected void setFlipperPosition(int position){
-            armFlipper.setPosition(position);
+        else{
+            armFlipper.setPosition(flipperPosition+=rightStickY*flipperConstant);
         }
-        protected void returnArm(){
-            while((!armAsync(ARMROTATE0POSITION))&&opModeIsActive()){
-                armFlipper.setPosition(.5);
-            }
-            while (!(stringAsync(VOLTSSTRINGUP))&&opModeIsActive()) {
-
-            }
-            setFlipperPosition(1);
-            sleep(500);
-            while (!(stringAsync(VOLTSSTRINGDOWN))&&opModeIsActive()) {
-
-            }
-                while((!armAsync(ARMROTATEMINVOLT))&&opModeIsActive()) {
-
-            }
-            finger.setPosition(servoPositions[1]);
+    }
+    protected void setFlipperPosition(int position){
+        armFlipper.setPosition(position);
+    }
+    protected void returnArm(){
+        while((!armAsync(ARMROTATE0POSITION))&&opModeIsActive()){
+            armFlipper.setPosition(.5);
         }
-        protected boolean lifterTicksAsync(int targTicks){
+        while (!(stringAsync(VOLTSSTRINGUP))&&opModeIsActive()) {
+
+        }
+        setFlipperPosition(1);
+        sleep(500);
+        while (!(stringAsync(VOLTSSTRINGDOWN))&&opModeIsActive()) {
+
+        }
+        while((!armAsync(ARMROTATEMINVOLT))&&opModeIsActive()) {
+
+        }
+        finger.setPosition(servoPositions[1]);
+    }
+    protected boolean lifterTicksAsync(int targTicks){
         //-10037 40 degrees
-            //167 0 degrees
-            //pos power pos ticks
-            int difTicks = targTicks - lifterMotor.getCurrentPosition();
-            if(Math.abs(difTicks)<350){
-                lifterMotor.setPower(0);
-                return(true);
-            }
-            if(difTicks<0){
-                lifterMotor.setPower(-1);
-                return(false);
-            }
-            else{lifterMotor.setPower(1);
-            return(false);
-            }
-
+        //167 0 degrees
+        //pos power pos ticks
+        int difTicks = targTicks - lifterMotor.getCurrentPosition();
+        if(abs(difTicks)<350){
+            lifterMotor.setPower(0);
+            return(true);
         }
-        protected void Forward(){
+        if(difTicks<0){
+            lifterMotor.setPower(-1);
+            return(false);
+        }
+        else{lifterMotor.setPower(1);
+            return(false);
+        }
+
+    }
+    protected void Forward(){
         frontLeft.setPower(.5);
         frontRight.setPower(.5);
         backLeft.setPower(.5);
         backRight.setPower(.5);
-        }
+    }
 
-        protected void pixelPlaceAuto(Location location,boolean isRight) {
+    protected void pixelPlaceAuto(Location location,boolean isRight) {
         if (isRight) {
             if (location == Location.CENTER) {
                 setFlipperPosition(1);

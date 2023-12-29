@@ -35,24 +35,26 @@ public class AutoBlueLeft extends StarterAuto {
                     asyncPositionCorrector();
                 }
                 releasePixel();
-                while ((!driveToPointAsync(new Pose(12, 63, Math.PI), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(12, 63, Math.PI), false))&&opModeIsActive()) {
                     asyncPositionCorrector();
                 }
-                while ((!driveToPointAsync(new Pose(45, 60, Math.PI), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(45, 60, Math.PI), false))&&opModeIsActive()) {
                     asyncPositionCorrector();
                 }
-                while ((!driveToPointAsync(new Pose(58, 62, Math.PI), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(58, 62, Math.PI/2), true))&&opModeIsActive()) {
                     asyncPositionCorrector();
+                    if(armAsync(0.6)){
+                        stringAsync(VOLTSSTRINGUP);
+                    }
                 }
-            turnRobot(Math.PI/2);
             pixelPlaceAuto(Location.CENTER,false);
-            sleep(1000);
+            sleep(400);
             returnArm();
 
             // rotate and then move or spline under gate past E towards center of backdrop
         }
         else if (colorDetector.location == Location.RIGHT) {
-                while ((!driveToPointAsync(new Pose(12, 36, Math.PI), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(12, 36, Math.PI), false))&&opModeIsActive()) {
                     asyncPositionCorrector();
                 }
 
@@ -60,15 +62,14 @@ public class AutoBlueLeft extends StarterAuto {
                     asyncPositionCorrector();
                 }
                 releasePixel();
-                while ((!driveToPointAsync(new Pose(12, 39 , Math.PI), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(12, 39 , Math.PI), false))&&opModeIsActive()) {
                     asyncPositionCorrector();
                 }
-                while ((!driveToPointAsync(new Pose(58, 62, Math.PI), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(58, 62, Math.PI/2), true))&&opModeIsActive()) {
                     asyncPositionCorrector();
                 }
-            turnRobot(Math.PI/2);
             pixelPlaceAuto(Location.RIGHT,false);
-            sleep(1000);
+            sleep(400);
             returnArm();
 
 
@@ -79,15 +80,17 @@ public class AutoBlueLeft extends StarterAuto {
                     asyncPositionCorrector();
                 }
                 releasePixel();
-                while ((!driveToPointAsync(new Pose(25.5, 60, Math.PI), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(25.5, 60, Math.PI), false))&&opModeIsActive()) {
                     asyncPositionCorrector();
                 }
-                while ((!driveToPointAsync(new Pose(58, 62, Math.PI), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(58, 62, Math.PI/2), true))&&opModeIsActive()) {
                     asyncPositionCorrector();
+                    if(armAsync(0.6)){
+                        stringAsync(VOLTSSTRINGUP);
+                    }
                 }
-            turnRobot(Math.PI/2);
             pixelPlaceAuto(Location.LEFT,false);
-            sleep(1000);
+            sleep(400);
             returnArm();
         }
         //turnRobot(Math.PI/2);

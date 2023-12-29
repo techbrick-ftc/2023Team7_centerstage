@@ -64,39 +64,42 @@ public class AutoRedLeft extends StarterAuto {
                     asyncPositionCorrector();
                 }
                 releasePixel();
-                while((!driveToPointAsync(new Pose(-60,-40,0),true))&&opModeIsActive()){
+                while((!driveToPointAsync(new Pose(-60,-40,0),false))&&opModeIsActive()){
                     asyncPositionCorrector();
                 }
                 while((!driveToPointAsync(new Pose(-60,-12,0),true))&&opModeIsActive()){
                     asyncPositionCorrector();
                 }
-                while((!driveToPointAsync(new Pose(61,-12,0),true))&&opModeIsActive()){
+                while((!driveToPointAsync(new Pose(61,-12,Math.PI/2),true))&&opModeIsActive()){
                     asyncPositionCorrector();
+                    if(armAsync(0.6)){
+                        stringAsync(VOLTSSTRINGUP);
+                    }
                 }
-            turnRobot(Math.PI/2);
             pixelPlaceAuto(Location.LEFT,false);
             sleep(400);
             returnArm();
 
             }
             else{ //right, (-27, -45)
-                while((!driveToPointAsync(new Pose(-36,-40,0),true))&&opModeIsActive()){
+                while((!driveToPointAsync(new Pose(-36,-40,0),false))&&opModeIsActive()){
                     asyncPositionCorrector();
                 }
                 while((!driveToPointAsync(new Pose(-24,-40,0),true))&&opModeIsActive()){
                     asyncPositionCorrector();
                 }
                 releasePixel();
-                while((!driveToPointAsync(new Pose(-36,-40,0),true))&&opModeIsActive()){
+                while((!driveToPointAsync(new Pose(-36,-40,0),false))&&opModeIsActive()){
                     asyncPositionCorrector();
                 }
                 while((!driveToPointAsync(new Pose(-36,-12,0),true))&&opModeIsActive()){
                     asyncPositionCorrector();
                 }
-                while((!driveToPointAsync(new Pose(61,-12,0),true))&&opModeIsActive()){
-                    asyncPositionCorrector();
+                while((!driveToPointAsync(new Pose(61,-12,Math.PI/2),true))&&opModeIsActive()){
+                    if(armAsync(0.6)){
+                        stringAsync(VOLTSSTRINGUP);
+                    }
                 }
-            turnRobot(Math.PI/2);
             pixelPlaceAuto(Location.CENTER,false);
             sleep(400);
             returnArm();

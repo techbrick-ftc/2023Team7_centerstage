@@ -18,6 +18,8 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.sql.Array;
 
+import javax.lang.model.type.NullType;
+
 enum Location {
     LEFT, CENTER, RIGHT
 }
@@ -27,6 +29,8 @@ public class ColorDetector extends OpenCvPipeline {
     Point point1;
     Point point2;
     Point point3;
+
+    Point pixelLocation = new Point(0,0);
     Location location = Location.LEFT;
     int width;
     int height;
@@ -143,7 +147,6 @@ public class ColorDetector extends OpenCvPipeline {
         Mat region2 = input.submat(rect2);
         Mat region3 = input.submat(rect3);
         location = checkLocation(region1, region2, region3, isRed ? 0 : 2);
-
         Imgproc.rectangle(input, rect1, new Scalar(0));
         Imgproc.rectangle(input, rect2, new Scalar(0));
         Imgproc.rectangle(input, rect3, new Scalar(0));
