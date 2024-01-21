@@ -41,12 +41,13 @@ public class AutoBlueLeft extends StarterAuto {
                 while ((!driveToPointAsync(new Pose(45, 60, Math.PI), false))&&opModeIsActive()) {
                     asyncPositionCorrector();
                 }
-                while ((!driveToPointAsync(new Pose(58, 62, Math.PI/2), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(58, 57.5, Math.PI/2), true))&&opModeIsActive()) {
                     asyncPositionCorrector();
-                    if(armAsync(0.6)){
-                        stringAsync(VOLTSSTRINGUP);
+                    if(armAsync(ARMROTATE0POSITION)){
+                        stringAsync(STRINGVOLTTOP);
                     }
                 }
+            getReadyToPlace();
             pixelPlaceAuto(Location.CENTER,false);
             sleep(400);
             returnArm();
@@ -58,16 +59,17 @@ public class AutoBlueLeft extends StarterAuto {
                     asyncPositionCorrector();
                 }
 
-                while ((!driveToPointAsync(new Pose(0, 39, Math.PI), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(-1.5, 39, Math.PI), true))&&opModeIsActive()) {
                     asyncPositionCorrector();
                 }
                 releasePixel();
                 while ((!driveToPointAsync(new Pose(12, 39 , Math.PI), false))&&opModeIsActive()) {
                     asyncPositionCorrector();
                 }
-                while ((!driveToPointAsync(new Pose(58, 62, Math.PI/2), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(58, 62.5, Math.PI/2), true))&&opModeIsActive()) {
                     asyncPositionCorrector();
                 }
+            getReadyToPlace();
             pixelPlaceAuto(Location.RIGHT,false);
             sleep(400);
             returnArm();
@@ -83,17 +85,36 @@ public class AutoBlueLeft extends StarterAuto {
                 while ((!driveToPointAsync(new Pose(25.5, 60, Math.PI), false))&&opModeIsActive()) {
                     asyncPositionCorrector();
                 }
-                while ((!driveToPointAsync(new Pose(58, 62, Math.PI/2), true))&&opModeIsActive()) {
+                while ((!driveToPointAsync(new Pose(58, 57.5, Math.PI/2), true))&&opModeIsActive()) {
                     asyncPositionCorrector();
-                    if(armAsync(0.6)){
-                        stringAsync(VOLTSSTRINGUP);
+                    if(armAsync(ARMROTATE0POSITION)){
+                        stringAsync(STRINGVOLTTOP);
                     }
                 }
+            getReadyToPlace();
             pixelPlaceAuto(Location.LEFT,false);
             sleep(400);
             returnArm();
         }
-        //turnRobot(Math.PI/2);
+//        while((!driveToPointAsync(new Pose(40,57.5,Math.PI/2),true))&&opModeIsActive()){
+//            asyncPositionCorrector();
+//        }
+//        while((!driveToPointAsync(new Pose(40,11,Math.PI/2),true))&&opModeIsActive()){
+//            asyncPositionCorrector();
+//        }
+//        while((!driveToPointAsync(new Pose(-58.5,11,Math.PI/2),true))&&opModeIsActive()){
+//            asyncPositionCorrector();
+//        }
+//        turnRobot(Math.PI/8);
+//        turnRobot(Math.PI/2);
+//        Forward();
+//        intakeMotor.setPower(.6);
+//        sleep(200);
+//        motorsStop();
+//        while((!driveToPointAsync(new Pose(58,57.5,-Math.PI/2),true))&&opModeIsActive()){
+//            asyncPositionCorrector();
+//        }
+//        intakeMotor.setPower(0);
     }
 }
 

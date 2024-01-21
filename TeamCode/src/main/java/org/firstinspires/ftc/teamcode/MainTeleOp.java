@@ -16,6 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 @TeleOp
 public class MainTeleOp extends StarterAuto {
 
+
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
 
     @Override
@@ -23,7 +24,7 @@ public class MainTeleOp extends StarterAuto {
         TelemetryPacket packet = new TelemetryPacket();
 
         initialize(new Pose(0,0,0));
-
+        double currentFlipperPosition = 0;
         double zeroAngle = 0;
         boolean speedMod = true;
         boolean fieldCentric = true;
@@ -77,6 +78,8 @@ public class MainTeleOp extends StarterAuto {
             boolean armDpadRight = cur2.dpad_right;
             boolean armDpadUp = cur2.dpad_up;
             boolean armDpadDown = cur2.dpad_down;
+            boolean armRightBumper = cur2.right_bumper;
+            boolean armLeftBumper = cur2.left_bumper; //asynch holding send to mid arm, also add d pad contorl flipper, arthy controls lifter with dpad
             boolean previousDriveA = previousGamepad1.a;
             boolean previousDriveB = previousGamepad1.b;
             boolean previousDriveX = previousGamepad1.x;
@@ -88,6 +91,7 @@ public class MainTeleOp extends StarterAuto {
             boolean previousDpadUp = previousGamepad2.dpad_up;
             boolean previousDpadDown = previousGamepad2.dpad_down;
             Pose current = getCurrentPose();
+
             if (!speedMod) {
                 driveYleftStick = Range.clip(-gamepad1.left_stick_y, -0.4, 0.4);
                 driveXleftStick = Range.clip(gamepad1.left_stick_x, -0.4, 0.4);
@@ -105,7 +109,10 @@ public class MainTeleOp extends StarterAuto {
             }
             if(armDpadRight) {
 
-            lifterTicksAsync(-10000);
+            lifterTicksAsync(-8617);
+            }
+            else{
+                lifterMotor.setPower(0);
             }
             //Ask if we still want this or change be to be something useful
             if (driveB && !previousArmB) {
@@ -125,6 +132,9 @@ public class MainTeleOp extends StarterAuto {
             if(!(armXleftStick<0.05 && armXleftStick>-0.05)){
                 armMove(armXleftStick);
             }
+            else if(armLeftBumper){
+                armAsync(ARMROTATE0POSITION);
+            }
             else{
                 armMotor.setPower(0);
             }
@@ -140,26 +150,26 @@ public class MainTeleOp extends StarterAuto {
             //Moves the strings out and in
             if((armRightTrigger>0.05)||(armLeftTrigger>0.05)){
                 if(armRightTrigger>0.05){
-                    stringAsync(stringPot.getVoltage()+.05);
+                    stringAsync(((stringPot.getVoltage()<.2) ? (stringPot.getVoltage()+3.312):(stringPot.getVoltage()))-.1);
                 }
                 else{
-                    stringAsync(stringPot.getVoltage()-0.05);
+                    stringAsync(((stringPot.getVoltage()<.2) ? (stringPot.getVoltage()+3.312):(stringPot.getVoltage()))+0.1);
                 }
             }
             else{
                 stringMotor.setPower(0);
             }
             packet.put("ArmPot", armPot.getVoltage());
-            packet.put("StringPot",stringPot.getVoltage());
+            packet.put("StringPot",((stringPot.getVoltage()<.2) ? (stringPot.getVoltage()+3.312):(stringPot.getVoltage())));
             // Moves the servo
             if ((armDpadUp || previousDpadUp || armDpadDown || previousDpadDown)) {
                 lift(armDpadUp, previousDpadUp, armDpadDown, previousDpadDown);
             }
             if(armX && previousArmX){
-                intakeMotor.setPower(1);
+                intakeMotor.setPower(-1);
             }
             else if(armB && previousArmB){
-                intakeMotor.setPower(-1);
+                intakeMotor.setPower(1);
             }
             else{
                 intakeMotor.setPower(0);
@@ -187,11 +197,21 @@ public class MainTeleOp extends StarterAuto {
                 }
             }
             if(!armY&&previousArmY){
-                if(armFlipper.getPosition()>0){
+                if(armFlipper.getPosition() == .29){
                     setFlipperPosition(-1);
+                    currentFlipperPosition = -1;
+                }
+                else if(armFlipper.getPosition() <=0){
+                    setFlipperPosition(.3);
+                    currentFlipperPosition = .3;
+                }
+                else if(armFlipper.getPosition() == .3){
+                    setFlipperPosition(1);
+                    currentFlipperPosition = 1;
                 }
                 else{
-                    setFlipperPosition(1);
+                    setFlipperPosition(.29);
+                    currentFlipperPosition = .29;
                 }
             }
 
@@ -214,10 +234,13 @@ public class MainTeleOp extends StarterAuto {
             packet.put("deadLeft",s);
             packet.put("deadRight",t);
             packet.put("deadPerp",d);
-
+            packet.put("frontright",frontRightPower);
+            packet.put("frontleftpower",frontLeftPower);
+            packet.put("backrightpower",-backRightPower);
+            packet.put("backleftpower",backLeftPower);
             frontRight.setPower(frontRightPower);  // front
             frontLeft.setPower(frontLeftPower);    // left
-            backRight.setPower(backRightPower);    // right
+            backRight.setPower(-backRightPower);    // right
             backLeft.setPower(backLeftPower);      // back
 
             packet.put("zer", Math.toDegrees(zeroAngle));

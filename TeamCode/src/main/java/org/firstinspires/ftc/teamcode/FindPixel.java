@@ -24,8 +24,15 @@ import javax.lang.model.type.NullType;
 
 
 public class FindPixel extends OpenCvPipeline {
+    Mat region1;
+    MatOfPoint2f imagePointMat;
+    MatOfPoint2f transformedPointMat;
+    Rect rect1;
     Point record;
+    double highest = 0;
+    double highest2 = 0;
     Point record2;
+    FtcDashboard dashboard = FtcDashboard.getInstance();
     Mat homographyMatrix;
     int width;
     int height;
@@ -109,34 +116,41 @@ public class FindPixel extends OpenCvPipeline {
         Point recordCoord2 = new Point();
         double xcoord = 315;
 
-        double highest = 0;
-        double highest2 = 0;
+        highest = 0;
+        highest2 = 0;
         double ycoord = 0;
         while((xcoord+width/2)<800){
-            ycoord=300+(xcoord-320)*(20/480);
+            ycoord=285;//+(xcoord-320)*(20/480);
             while((ycoord+height/2)<448){
                 //check
-                Rect rect1 = findPoints(new Point(xcoord,ycoord));
-                Mat region1 = input.submat(rect1);
+                rect1 = findPoints(new Point(xcoord,ycoord));
+                region1 = input.submat(rect1);
                 double output = matToRGB(region1);
-                if ((output>highest)&&((Math.abs(xcoord-recordCoord2.x))>width/2)&&((Math.abs(ycoord-recordCoord2.y))>height/2)){
+//                packet.put("output",output);
+//                dashboard.sendTelemetryPacket(packet);
+                if ((output>highest)&&(((Math.abs(xcoord-recordCoord2.x))>width)||((Math.abs(ycoord-recordCoord2.y))>height*.8))){
                     highest = output;
                     record = new Point(xcoord,ycoord);
                     recordCoord = record;
-                    MatOfPoint2f imagePointMat = new MatOfPoint2f(record);
-                    MatOfPoint2f transformedPointMat = new MatOfPoint2f();
+
+
+
+                    imagePointMat = new MatOfPoint2f(record);
+                    transformedPointMat = new MatOfPoint2f();
 
                     Core.perspectiveTransform(imagePointMat, transformedPointMat, homographyMatrix);
                     Point[] transformedPoints = transformedPointMat.toArray();
                     Point transformedPoint = transformedPoints[0];
                     record = new Point(transformedPoint.x,transformedPoint.y);
                 }
-                else if((output>highest2)&&((Math.abs(xcoord-recordCoord.x))>width/2)&&((Math.abs(ycoord-recordCoord.y))>height/2)){
+                else if((output>highest2)&&(((Math.abs(xcoord-recordCoord.x))>width)||((Math.abs(ycoord-recordCoord.y))>height))){
                     highest2 = output;
                     record2 = new Point(xcoord,ycoord);
                     recordCoord2 = record2;
-                    MatOfPoint2f imagePointMat = new MatOfPoint2f(record2);
-                    MatOfPoint2f transformedPointMat = new MatOfPoint2f();
+
+
+                    imagePointMat = new MatOfPoint2f(record2);
+                    transformedPointMat = new MatOfPoint2f();
 
                     Core.perspectiveTransform(imagePointMat, transformedPointMat, homographyMatrix);
                     Point[] transformedPoints = transformedPointMat.toArray();
@@ -145,10 +159,12 @@ public class FindPixel extends OpenCvPipeline {
 
 
                 }
-                ycoord+=height/2;
+                ycoord+=Math.round(height/4);
             }
-            xcoord+=width/2;
+            xcoord+=Math.round(width/4);
         }
+        Imgproc.line(input, new Point(315,285), new Point(800,285), new Scalar(0, 0, 255), 4);
+        Imgproc.line(input, new Point(315,300), new Point(315,448), new Scalar(0, 0, 255), 4);
         Rect rect1 = findPoints(recordCoord);
         Imgproc.rectangle(input, rect1, new Scalar(0,255,0));
         Rect rect2 = findPoints(recordCoord2);

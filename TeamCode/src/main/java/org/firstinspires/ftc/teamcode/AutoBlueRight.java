@@ -47,12 +47,13 @@ public class AutoBlueRight extends StarterAuto {
             while((!driveToPointAsync(new Pose(-56,8,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
-            while((!driveToPointAsync(new Pose(60,12,Math.PI/2),true))&&opModeIsActive()){
+            while((!driveToPointAsync(new Pose(58,16,Math.PI/2),true))&&opModeIsActive()){
                 asyncPositionCorrector();
-                if(armAsync(0.6)){
-                    stringAsync(VOLTSSTRINGUP);
-                }
+//                if(armAsync(ARMROTATE0POSITION)){
+//                    stringAsync(STRINGVOLTTOP);
+//                }
             }
+            getReadyToPlace();
             pixelPlaceAuto(Location.CENTER,true);
             sleep(400);
             returnArm();
@@ -62,7 +63,7 @@ public class AutoBlueRight extends StarterAuto {
         else if (colorDetector.location == Location.RIGHT) {
             packet.put("location", "right");
             dashboard.sendTelemetryPacket(packet);
-            while((!driveToPointAsync(new Pose(-48,40,Math.PI),true))&&opModeIsActive()){
+            while((!driveToPointAsync(new Pose(-49.5,40,Math.PI),true))&&opModeIsActive()){
                     asyncPositionCorrector();
             }
             releasePixel();
@@ -75,12 +76,13 @@ public class AutoBlueRight extends StarterAuto {
             while((!driveToPointAsync(new Pose(60,8,Math.PI),true))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
-            while((!driveToPointAsync(new Pose(60,10,Math.PI/2),true))&&opModeIsActive()){
+            while((!driveToPointAsync(new Pose(58,16,Math.PI/2),true))&&opModeIsActive()){
                 asyncPositionCorrector();
-                if(armAsync(0.6)){
-                    stringAsync(VOLTSSTRINGUP);
-                }
+//                if(armAsync(ARMROTATE0POSITION)){
+//                    stringAsync(STRINGVOLTTOP);
+//                }
             }
+            getReadyToPlace();
             pixelPlaceAuto(Location.RIGHT,true);
             sleep(400);
             returnArm();
@@ -106,29 +108,30 @@ public class AutoBlueRight extends StarterAuto {
             while((!driveToPointAsync(new Pose(60,8,Math.PI),false))&&opModeIsActive()){
                 asyncPositionCorrector();
             }
-            while((!driveToPointAsync(new Pose(60,12,Math.PI/2),true))&&opModeIsActive()){
+            while((!driveToPointAsync(new Pose(58,11,Math.PI/2),true))&&opModeIsActive()){
                 asyncPositionCorrector();
-                if(armAsync(0.6)){
-                    stringAsync(VOLTSSTRINGUP);
-                }
+                //if(armAsync(ARMROTATE0POSITION)){
+                //    stringAsync(STRINGVOLTTOP);
+                //}
            }
+            getReadyToPlace();
             pixelPlaceAuto(Location.LEFT,true);
             sleep(400);
             returnArm();
         }
-        while((!driveToPointAsync(new Pose(-58.5,11,Math.PI/2),true))&&opModeIsActive()){
-            asyncPositionCorrector();
-        }
-        turnRobot(Math.PI/8);
-        turnRobot(Math.PI/2);
-        Forward();
-        intakeMotor.setPower(.6);
-        sleep(200);
-        motorsStop();
-        while((!driveToPointAsync(new Pose(58,11,-Math.PI/2),true))&&opModeIsActive()){
-            asyncPositionCorrector();
-        }
-        intakeMotor.setPower(0);
+//        while((!driveToPointAsync(new Pose(-58.5,11,Math.PI/2),true))&&opModeIsActive()){
+//            asyncPositionCorrector();
+//        }
+//        turnRobot(Math.PI/8);
+//        turnRobot(Math.PI/2);
+//        Forward();
+//        intakeMotor.setPower(.6);
+//        sleep(200);
+//        motorsStop();
+//        while((!driveToPointAsync(new Pose(58,11,-Math.PI/2),true))&&opModeIsActive()){
+//            asyncPositionCorrector();
+//        }
+//        intakeMotor.setPower(0);
     }
 
     }

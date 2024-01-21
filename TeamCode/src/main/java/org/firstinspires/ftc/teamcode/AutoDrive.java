@@ -4,6 +4,8 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.Point;
@@ -11,7 +13,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-@Autonomous(name = "ticks")
+@Autonomous(name = "tick")
 public class AutoDrive extends StarterAuto {
 
 
@@ -19,30 +21,49 @@ public class AutoDrive extends StarterAuto {
     public void runOpMode() {
 
         //initialize(new Pose(0,0,0));
-        initTfod();
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        OpenCvWebcam camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        FtcDashboard.getInstance().startCameraStream(camera, 0);
-        camera = OpenCvCameraFactory.getInstance()
-                .createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        camera.startStreaming(800, 448, OpenCvCameraRotation.UPRIGHT);
+       // FtcDashboard dashboard = FtcDashboard.getInstance();
+
+        TelemetryPacket packet = new TelemetryPacket();
+        initialize(new Pose(0,0,0));
+
+
+        //asyncPositionCorrector();
+        //packet.put("record",colorDetector.record);
+        //packet.put("record2",colorDetector.record2);
+        //
+//            packet.fieldOverlay()
+//                    .drawImage("robot.jpg", fieldPose.x-8, fieldPose.y-8, 16, 16);
+        dashboard.sendTelemetryPacket(packet);
+
+        // FindPixel colorDetector = new FindPixel(60, 15, true, hardwareMap);
+        while(opModeInInit()){
+            packet.put("string",((stringPot.getVoltage()<.2) ? (stringPot.getVoltage()+3.312):(stringPot.getVoltage())));
+            packet.put("stringreal",(stringPot.getVoltage()));
+            dashboard.sendTelemetryPacket(packet);
+        }
         waitForStart();
-        while (opModeIsActive()) {
-            //asyncPositionCorrector();
+        //getReadyToPlace();
+        //pixelPlaceAuto(Location.CENTER,true);
+        finger.setPosition(1);
+        //intakeMotor.setPower(.5);
+        //finger.setPosition(0.5);  maks it hold stuff
+        //armFlipper.setPosition(.3);
 
-            TelemetryPacket packet = new TelemetryPacket();
-            //asyncPositionCorrector();
-//                packet.put("armpot",armPot.getVoltage());
-//                packet.put("stringpot",stringPot.getVoltage());
-//                packet.put("lifter",lifterMotor.getCurrentPosition());
-//                packet.put("Field Pose", fieldPose);
-            telemetryTfod();
-            telemetry.update();
+        while (opModeIsActive()) {;
+            //returnArm();
+            //armFlipper.setPosition(.3);
 
-            // Save CPU resources; can resume streaming when needed.
+            //armMotor.setPower(.4);
+//            while((armAsync(2.4))&&(opModeIsActive())){
+//            }
 
-            // Share the CPU.
-            sleep(20);
+            //while((stringAsync(STRINGVOLTDOWN))&&(opModeIsActive())){
+            //}
+            //packet.put("record",colorDetector.record);
+            //packet.put("record2",colorDetector.record2);
+            //
+//            packet.fieldOverlay()
+//                    .drawImage("robot.jpg", fieldPose.x-8, fieldPose.y-8, 16, 16);
             dashboard.sendTelemetryPacket(packet);
         }
     }}

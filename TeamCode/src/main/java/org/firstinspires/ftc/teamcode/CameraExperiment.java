@@ -22,11 +22,14 @@ public class CameraExperiment extends LinearOpMode {
 
 // position 1 is left, position 2 is center, position 3 is right
 
-        FindPixel colorDetector = new FindPixel(60, 20, true, hardwareMap);
+        FindPixel colorDetector = new FindPixel(60, 15, true, hardwareMap);
 
         waitForStart();
         while (opModeIsActive()) {
             packet.put("record", colorDetector.record);
+            packet.put("record2", colorDetector.record2);
+            packet.put("highest", colorDetector.highest);
+            packet.put("highest2", colorDetector.highest2);
             dashboard.sendTelemetryPacket(packet);
 
 

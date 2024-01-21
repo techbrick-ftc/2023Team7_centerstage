@@ -321,11 +321,7 @@ public class StarterAutoArmless extends LinearOpMode {
         }
         if (slowDown) {
             if (d < startDecel) {
-//                double powerLinear = ((.7 / (startDecel - stopDecel)) * (d - stopDecel) + .3) - 1 * (Math.sqrt((velocityPose.x * velocityPose.x) + (velocityPose.y * velocityPose.y)) / maxVelocity);
-//                return powerLinear;
-//            }
                 double powerLinear = (((1 - minimumPower) / (startDecel - stopDecel)) * (d - stopDecel) + minimumPower);
-                //will want to change velocityRatio to a real algorithm
                 double velocityRatio = (Math.sqrt((velocityPose.x * velocityPose.x) + (velocityPose.y * velocityPose.y)) / maxVelocity);
                 return (powerLinear - velocityRatio);
             }
