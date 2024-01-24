@@ -30,7 +30,7 @@ public class ColorDetector extends OpenCvPipeline {
     Point point2;
     Point point3;
 
-    Point pixelLocation = new Point(0,0);
+    Point pixelLocation = new Point(0, 0);
     Location location = Location.LEFT;
     int width;
     int height;
@@ -65,10 +65,11 @@ public class ColorDetector extends OpenCvPipeline {
         });
         FtcDashboard.getInstance().startCameraStream(camera, 0);
     }
-    public ColorDetector( int width, int height, boolean isRed, HardwareMap hardwareMap) {
+
+    public ColorDetector(int width, int height, boolean isRed, HardwareMap hardwareMap) {
         point1 = new Point(45, 330);
         point2 = new Point(420, 305);
-        point3 = new Point(780, 330);//x was 855 testing stuff rn 855 seems to break :(
+        point3 = new Point(780, 330);// x was 855 testing stuff rn 855 seems to break :(
         // position 1 is left, position 2 is center, position 3 is right
         this.width = width;
         this.height = height;
@@ -91,7 +92,8 @@ public class ColorDetector extends OpenCvPipeline {
         });
         FtcDashboard.getInstance().startCameraStream(camera, 0);
     }
-    public void closeCamera(){
+
+    public void closeCamera() {
         camera.closeCameraDevice();
     }
 

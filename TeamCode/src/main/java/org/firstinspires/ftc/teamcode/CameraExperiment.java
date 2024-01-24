@@ -20,7 +20,7 @@ public class CameraExperiment extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-// position 1 is left, position 2 is center, position 3 is right
+        // position 1 is left, position 2 is center, position 3 is right
 
         FindPixel colorDetector = new FindPixel(60, 15, true, hardwareMap);
 
@@ -31,8 +31,6 @@ public class CameraExperiment extends LinearOpMode {
             packet.put("highest", colorDetector.highest);
             packet.put("highest2", colorDetector.highest2);
             dashboard.sendTelemetryPacket(packet);
-
-
 
         }
     }

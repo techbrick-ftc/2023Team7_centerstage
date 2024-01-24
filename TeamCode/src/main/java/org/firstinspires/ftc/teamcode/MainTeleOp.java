@@ -16,14 +16,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 @TeleOp
 public class MainTeleOp extends StarterAuto {
 
-
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
 
     @Override
     public void runOpMode() {
         TelemetryPacket packet = new TelemetryPacket();
 
-        initialize(new Pose(0,0,0));
+        initialize(new Pose(0, 0, 0));
         double currentFlipperPosition = 0;
         double zeroAngle = 0;
         boolean speedMod = true;
@@ -42,7 +41,7 @@ public class MainTeleOp extends StarterAuto {
 
         zeroAngle = getCurrentPose().angle;
         while (opModeIsActive()) {
-            packet.put("lifter",lifterMotor.getCurrentPosition());
+            packet.put("lifter", lifterMotor.getCurrentPosition());
             asyncPositionCorrector();
             try {
                 cur2.copy(gamepad2);
@@ -64,7 +63,7 @@ public class MainTeleOp extends StarterAuto {
             double armXrightStick = gamepad2.right_stick_x;
             double driveXrightStick = gamepad1.right_stick_x;
             double driveYrightstick = gamepad1.right_stick_y;
-                    rx = -gamepad1.right_stick_x;
+            rx = -gamepad1.right_stick_x;
             double armRightTrigger = gamepad2.right_trigger;
             double armLeftTrigger = gamepad2.left_trigger;
             boolean driveA = cur1.a;
@@ -81,7 +80,8 @@ public class MainTeleOp extends StarterAuto {
             boolean armDpadLeft = cur2.dpad_left;
             boolean previousArmDpadLeft = previousGamepad2.dpad_left;
             boolean armRightBumper = cur2.right_bumper;
-            boolean armLeftBumper = cur2.left_bumper; //asynch holding send to mid arm, also add d pad contorl flipper, arthy controls lifter with dpad
+            boolean armLeftBumper = cur2.left_bumper; // asynch holding send to mid arm, also add d pad contorl flipper,
+                                                      // arthy controls lifter with dpad
             boolean previousDriveA = previousGamepad1.a;
             boolean previousDriveB = previousGamepad1.b;
             boolean previousDriveX = previousGamepad1.x;
@@ -102,25 +102,24 @@ public class MainTeleOp extends StarterAuto {
                 driveYleftStick = Range.clip(-gamepad1.left_stick_y, -0.95, 0.95);
                 rx = -Range.clip(gamepad1.right_stick_x, -0.75, 0.75);
             }
-            packet.put("rx",rx);
-            packet.put("cur",fieldPose);
+            packet.put("rx", rx);
+            packet.put("cur", fieldPose);
             // Read inverse IMU heading, as the IMU heading is CW positive
             double botHeading = -(current.angle - zeroAngle);
             if (driveY) {
                 zeroAngle = current.angle;
             }
-            if(armDpadRight) {
+            if (armDpadRight) {
 
-            lifterTicksAsync(-8617);
-            }
-            else{
+                lifterTicksAsync(-8617);
+            } else {
                 lifterMotor.setPower(0);
             }
-            //Ask if we still want this or change be to be something useful
+            // Ask if we still want this or change be to be something useful
             if (driveB && !previousArmB) {
                 fieldCentric = !fieldCentric;
             }
-            if(driveX){
+            if (driveX) {
                 airplane.setPosition(.5);
             }
             if (fieldCentric) {
@@ -130,102 +129,92 @@ public class MainTeleOp extends StarterAuto {
                 rotX = driveXleftStick;
                 rotY = driveYleftStick;
             }
-            //Moves the arm back and forth
-            if(!(armXleftStick<0.05 && armXleftStick>-0.05)){
+            // Moves the arm back and forth
+            if (!(armXleftStick < 0.05 && armXleftStick > -0.05)) {
                 armMove(armXleftStick);
-            }
-            else if(armLeftBumper){
+            } else if (armLeftBumper) {
                 armAsync(ARMROTATE0POSITION);
-            }
-            else{
+            } else {
                 armMotor.setPower(0);
             }
-//            if(!(armXleftStick<0.05 && armXleftStick>-0.05)){
-//                if(armXleftStick>0.05){
-//                    armAsync(armPot.getVoltage()+.05);
-//                }
-//                else{
-//                    armAsync(armPot.getVoltage()-0.05);
-//                }
-//            }
+            // if(!(armXleftStick<0.05 && armXleftStick>-0.05)){
+            // if(armXleftStick>0.05){
+            // armAsync(armPot.getVoltage()+.05);
+            // }
+            // else{
+            // armAsync(armPot.getVoltage()-0.05);
+            // }
+            // }
 
-            //Moves the strings out and in
-            if((armRightTrigger>0.05)||(armLeftTrigger>0.05)){
-                if(armRightTrigger>0.05){
-                    stringAsync(((stringPot.getVoltage()<.2) ? (stringPot.getVoltage()+3.312):(stringPot.getVoltage()))-.1);
+            // Moves the strings out and in
+            if ((armRightTrigger > 0.05) || (armLeftTrigger > 0.05)) {
+                if (armRightTrigger > 0.05) {
+                    stringAsync(((stringPot.getVoltage() < .2) ? (stringPot.getVoltage() + 3.312)
+                            : (stringPot.getVoltage())) - .1);
+                } else {
+                    stringAsync(((stringPot.getVoltage() < .2) ? (stringPot.getVoltage() + 3.312)
+                            : (stringPot.getVoltage())) + 0.1);
                 }
-                else{
-                    stringAsync(((stringPot.getVoltage()<.2) ? (stringPot.getVoltage()+3.312):(stringPot.getVoltage()))+0.1);
-                }
-            }
-            else{
+            } else {
                 stringMotor.setPower(0);
             }
             packet.put("ArmPot", armPot.getVoltage());
-            packet.put("StringPot",((stringPot.getVoltage()<.2) ? (stringPot.getVoltage()+3.312):(stringPot.getVoltage())));
+            packet.put("StringPot",
+                    ((stringPot.getVoltage() < .2) ? (stringPot.getVoltage() + 3.312) : (stringPot.getVoltage())));
             // Moves the servo
             if ((armDpadUp || previousDpadUp || armDpadDown || previousDpadDown)) {
                 lift(armDpadUp, previousDpadUp, armDpadDown, previousDpadDown);
             }
-            if(armDpadLeft){//Goes back to center
+            if (armDpadLeft) {// Goes back to center
                 armAsync(ARMROTATE0POSITION);
                 stringAsync(STRINGVOLTTOP);
             }
-            if(!armDpadLeft && previousArmDpadLeft){
+            if (!armDpadLeft && previousArmDpadLeft) {
                 armMotor.setPower(0);
                 stringMotor.setPower(0);
 
             }
-            if(armX && previousArmX){
+            if (armX && previousArmX) {
                 intakeMotor.setPower(-1);
-            }
-            else if(armB && previousArmB){
+            } else if (armB && previousArmB) {
                 intakeMotor.setPower(1);
-            }
-            else{
+            } else {
                 intakeMotor.setPower(0);
             }
-            if(armA && !previousArmA){
-                if(currentPosition == 2){
+            if (armA && !previousArmA) {
+                if (currentPosition == 2) {
                     setFinger(servoPositions[1]);
                     currentPosition = 1;
                     increasingPosition = "decreasing";
-                }
-                else if(currentPosition==1){
-                    if(increasingPosition.equals("increasing")){
+                } else if (currentPosition == 1) {
+                    if (increasingPosition.equals("increasing")) {
                         setFinger(servoPositions[2]);
                         currentPosition = 2;
-                    }
-                    else{
+                    } else {
                         setFinger(servoPositions[0]);
                         currentPosition = 0;
                     }
-                }
-                else{
+                } else {
                     setFinger(servoPositions[1]);
                     currentPosition = 1;
-                    increasingPosition="increasing";
+                    increasingPosition = "increasing";
                 }
             }
-            if(!armY&&previousArmY){
-                if(armFlipper.getPosition() == .29){
+            if (!armY && previousArmY) {
+                if (armFlipper.getPosition() == .29) {
                     setFlipperPosition(-1);
                     currentFlipperPosition = -1;
-                }
-                else if(armFlipper.getPosition() <=0){
+                } else if (armFlipper.getPosition() <= 0) {
                     setFlipperPosition(.3);
                     currentFlipperPosition = .3;
-                }
-                else if(armFlipper.getPosition() == .3){
+                } else if (armFlipper.getPosition() == .3) {
                     setFlipperPosition(1);
                     currentFlipperPosition = 1;
-                }
-                else{
+                } else {
                     setFlipperPosition(.29);
                     currentFlipperPosition = .29;
                 }
             }
-
 
             packet.put("rotatex", rotX);
             packet.put("rotatey", rotY);
@@ -239,25 +228,27 @@ public class MainTeleOp extends StarterAuto {
             double backLeftPower = (rotY - rotX - rx) / denominator;
             double frontRightPower = (rotY - rotX + rx) / denominator;
             double backRightPower = (rotY + rotX + rx) / denominator;
-            double s= deadLeft.getCurrentPosition();
-            double t= deadRight.getCurrentPosition();
-            double d= deadPerp.getCurrentPosition();
-            packet.put("deadLeft",s);
-            packet.put("deadRight",t);
-            packet.put("deadPerp",d);
-            packet.put("frontright",frontRightPower);
-            packet.put("frontleftpower",frontLeftPower);
-            packet.put("backrightpower",-backRightPower);
-            packet.put("backleftpower",backLeftPower);
-            frontRight.setPower(frontRightPower);  // front
-            frontLeft.setPower(frontLeftPower);    // left
-            backRight.setPower(-backRightPower);    // right
-            backLeft.setPower(backLeftPower);      // back
+            double s = deadLeft.getCurrentPosition();
+            double t = deadRight.getCurrentPosition();
+            double d = deadPerp.getCurrentPosition();
+            packet.put("deadLeft", s);
+            packet.put("deadRight", t);
+            packet.put("deadPerp", d);
+            packet.put("frontright", frontRightPower);
+            packet.put("frontleftpower", frontLeftPower);
+            packet.put("backrightpower", -backRightPower);
+            packet.put("backleftpower", backLeftPower);
+            frontRight.setPower(frontRightPower); // front
+            frontLeft.setPower(frontLeftPower); // left
+            backRight.setPower(-backRightPower); // right
+            backLeft.setPower(backLeftPower); // back
 
             packet.put("zer", Math.toDegrees(zeroAngle));
             packet.put("imu x ", Math.toDegrees(current.angle));
-            packet.put("imu y ", Math.toDegrees(imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).secondAngle));
-            packet.put("imu z ", Math.toDegrees(imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle));
+            packet.put("imu y ", Math.toDegrees(
+                    imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).secondAngle));
+            packet.put("imu z ", Math.toDegrees(
+                    imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle));
             dashboard.sendTelemetryPacket(packet);
             try {
                 previousGamepad1.copy(cur1);

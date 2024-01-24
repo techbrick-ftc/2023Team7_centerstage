@@ -1,4 +1,5 @@
-package org.firstinspires.ftc.teamcode;/* Copyright (c) 2019 FIRST. All rights reserved.
+package org.firstinspires.ftc.teamcode;
+/* Copyright (c) 2019 FIRST. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -27,7 +28,6 @@ package org.firstinspires.ftc.teamcode;/* Copyright (c) 2019 FIRST. All rights r
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -49,10 +49,11 @@ import java.util.List;
 @TeleOp(name = "TensorFlow Object Detection Easy")
 public class ConceptTensorFlowObjectDetectionEasy extends LinearOpMode {
 
-    private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
+    private static final boolean USE_WEBCAM = true; // true for webcam, false for phone camera
 
     /**
-     * The variable to store our instance of the TensorFlow Object Detection processor.
+     * The variable to store our instance of the TensorFlow Object Detection
+     * processor.
      */
     private TfodProcessor tfod;
 
@@ -95,7 +96,7 @@ public class ConceptTensorFlowObjectDetectionEasy extends LinearOpMode {
         // Save more CPU resources when camera is no longer needed.
         visionPortal.close();
 
-    }   // end runOpMode()
+    } // end runOpMode()
 
     /**
      * Initialize the TensorFlow Object Detection processor.
@@ -114,7 +115,7 @@ public class ConceptTensorFlowObjectDetectionEasy extends LinearOpMode {
                     BuiltinCameraDirection.BACK, tfod);
         }
 
-    }   // end method initTfod()
+    } // end method initTfod()
 
     /**
      * Add telemetry about TensorFlow Object Detection (TFOD) recognitions.
@@ -126,15 +127,15 @@ public class ConceptTensorFlowObjectDetectionEasy extends LinearOpMode {
 
         // Step through the list of recognitions and display info for each one.
         for (Recognition recognition : currentRecognitions) {
-            double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
-            double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+            double x = (recognition.getLeft() + recognition.getRight()) / 2;
+            double y = (recognition.getTop() + recognition.getBottom()) / 2;
 
-            telemetry.addData(""," ");
+            telemetry.addData("", " ");
             telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
             telemetry.addData("- Position", "%.0f / %.0f", x, y);
             telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
-        }   // end for() loop
+        } // end for() loop
 
-    }   // end method telemetryTfod()
+    } // end method telemetryTfod()
 
-}   // end class
+} // end class
