@@ -78,6 +78,8 @@ public class MainTeleOp extends StarterAuto {
             boolean armDpadRight = cur2.dpad_right;
             boolean armDpadUp = cur2.dpad_up;
             boolean armDpadDown = cur2.dpad_down;
+            boolean armDpadLeft = cur2.dpad_left;
+            boolean previousArmDpadLeft = previousGamepad2.dpad_left;
             boolean armRightBumper = cur2.right_bumper;
             boolean armLeftBumper = cur2.left_bumper; //asynch holding send to mid arm, also add d pad contorl flipper, arthy controls lifter with dpad
             boolean previousDriveA = previousGamepad1.a;
@@ -164,6 +166,15 @@ public class MainTeleOp extends StarterAuto {
             // Moves the servo
             if ((armDpadUp || previousDpadUp || armDpadDown || previousDpadDown)) {
                 lift(armDpadUp, previousDpadUp, armDpadDown, previousDpadDown);
+            }
+            if(armDpadLeft){//Goes back to center
+                armAsync(ARMROTATE0POSITION);
+                stringAsync(STRINGVOLTTOP);
+            }
+            if(!armDpadLeft && previousArmDpadLeft){
+                armMotor.setPower(0);
+                stringMotor.setPower(0);
+
             }
             if(armX && previousArmX){
                 intakeMotor.setPower(-1);
