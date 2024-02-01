@@ -22,6 +22,7 @@ public class MainTeleOp extends StarterAuto {
         Extended,
 
         Flipped,
+        Intaking,
 
     }
     public enum returningArmState{
@@ -91,6 +92,8 @@ public class MainTeleOp extends StarterAuto {
             packet.put("flipposition",armFlipper.getPosition());
             packet.put("lastflipPosition",lastFlipPosition);
             packet.put("lifter", lifterMotor.getCurrentPosition());
+            packet.put("Pixel 1 Color", pixel1sensor.alpha());
+            packet.put("Pixel 2 Color", pixel2sensor.alpha());
             asyncPositionCorrector();
             try {
                 cur2.copy(gamepad2);

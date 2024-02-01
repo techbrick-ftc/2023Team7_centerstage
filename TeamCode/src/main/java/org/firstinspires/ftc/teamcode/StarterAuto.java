@@ -40,8 +40,8 @@ import java.util.List;
 Configurations:
 Expansion Hub:
  I2C Port 0: colorBL     aka color1
- I2C Port 1: colorBR
- I2C Port 2: colorFR
+ I2C Port 1: pixel1sensor
+ I2C Port 2: pixel2sensor
  I2C Port 3: colorFL
 
  Servo Port 0:wristServo
@@ -174,8 +174,8 @@ public class StarterAuto extends LinearOpMode {
     double[] servoPositions = { -1, .5, 1 };
     int currentPosition = 2;
     String increasingPosition = "increasing";
-    public ColorSensor colorFR;
-    public ColorSensor colorFL;
+    public ColorSensor pixel1sensor;
+    public ColorSensor pixel2sensor;
     public ColorSensor colorBR;
     public ColorSensor colorBL;
     public TouchSensor armuptouch;
@@ -459,6 +459,8 @@ public class StarterAuto extends LinearOpMode {
         stringPot = hardwareMap.get(AnalogInput.class, "stringPot2"); // C3
         downGreen = hardwareMap.get(DigitalChannel.class, "downgreen");
         downRed = hardwareMap.get(DigitalChannel.class, "downred");
+        pixel1sensor = hardwareMap.get(ColorSensor.class,"pixel1sensor");
+        pixel2sensor = hardwareMap.get(ColorSensor.class,"pixel2sensor");
 
         deadLeft = hardwareMap.get(DcMotorEx.class, "backRight"); // C0
         deadRight = hardwareMap.get(DcMotorEx.class, "frontRight"); // C2
@@ -910,6 +912,21 @@ public class StarterAuto extends LinearOpMode {
             telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
         } // end for() loop
 
+    }
+    public boolean pixelDetection(ColorSensor sensor){
+        if(sensor.alpha()>140){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    public void autoIntake(){
+        if (pixelDetection(pixel1sensor) && pixelDetection((pixel2sensor))) {
+
+
+        }
     }
 
     public void initTfod() {
