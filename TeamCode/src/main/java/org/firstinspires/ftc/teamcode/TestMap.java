@@ -12,11 +12,10 @@ public class TestMap extends StarterAuto {
 
         while (opModeIsActive()) {
             TelemetryPacket packet = new TelemetryPacket();
-            // packet.fieldOverlay()
-            // .drawImage("robot.jpg", 24, 24, 16, 16);
             packet.fieldOverlay()
-                    .setFill("blue")
-                    .fillRect(-20, -20, 40, 40);
+                    .drawImage("/sdcard/FIRST/download6.jpg", 24, 24, 16, 16);
+//                    .setFill("blue")
+//                    .fillRect(-20, -20, 40, 40);
             dashboard.sendTelemetryPacket(packet);
         }
         // turnRobot(Math.PI/2);

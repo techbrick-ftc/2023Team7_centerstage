@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.Range;
 
@@ -15,15 +16,40 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 @TeleOp
 public class MainTeleOp extends StarterAuto {
+    public enum armState {
+        Zeroing,
+        Extending,
+        Extended,
 
+        Flipped,
+
+    }
+    public enum returningArmState{
+        Zeroing,
+        Extending,
+        Flipping,
+        Flipped,
+        Downing,
+        Siding,
+
+
+
+    }
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
-
+    armState currentArmState = armState.Zeroing;
+    returningArmState currentReturningArmState = returningArmState.Zeroing;
     @Override
     public void runOpMode() {
         TelemetryPacket packet = new TelemetryPacket();
 
         initialize(new Pose(0, 0, 0));
-        double currentFlipperPosition = 0;
+        double robotVoltage = voltageSensor.getVoltage();
+        double timeToFlip =2000;
+        double currentFlipperPosition = 1;
+        boolean stringingDown = false;
+        double flipTimer = 0;
+        double lastFlipPosition = 0;
+        boolean flipped = false;
         double zeroAngle = 0;
         boolean speedMod = true;
         boolean fieldCentric = true;
@@ -40,7 +66,30 @@ public class MainTeleOp extends StarterAuto {
         waitForStart();
 
         zeroAngle = getCurrentPose().angle;
+        downRed.setMode(DigitalChannel.Mode.OUTPUT);
+        downGreen.setMode(DigitalChannel.Mode.OUTPUT);
         while (opModeIsActive()) {
+            if(armFlipper.getPosition() == lastFlipPosition){
+                if((flipTimer+timeToFlip) <System.currentTimeMillis()){
+                    flipped=true;
+                }
+                lastFlipPosition = armFlipper.getPosition();
+            }
+            else{
+                flipTimer=System.currentTimeMillis();
+                flipped=false;
+                if(lastFlipPosition-armFlipper.getPosition() <0){
+                    timeToFlip=1300;
+                }
+                else{
+                    timeToFlip=2000;
+                }
+
+                lastFlipPosition = armFlipper.getPosition();
+            }
+            packet.put("fliptimer", flipTimer);
+            packet.put("flipposition",armFlipper.getPosition());
+            packet.put("lastflipPosition",lastFlipPosition);
             packet.put("lifter", lifterMotor.getCurrentPosition());
             asyncPositionCorrector();
             try {
@@ -81,6 +130,8 @@ public class MainTeleOp extends StarterAuto {
             boolean previousArmDpadLeft = previousGamepad2.dpad_left;
             boolean armRightBumper = cur2.right_bumper;
             boolean armLeftBumper = cur2.left_bumper; // asynch holding send to mid arm, also add d pad contorl flipper,
+            boolean previousArmLeftBumper = previousGamepad2.left_bumper;
+            boolean previousArmRightBumper = previousGamepad2.right_bumper;
                                                       // arthy controls lifter with dpad
             boolean previousDriveA = previousGamepad1.a;
             boolean previousDriveB = previousGamepad1.b;
@@ -106,12 +157,12 @@ public class MainTeleOp extends StarterAuto {
             packet.put("cur", fieldPose);
             // Read inverse IMU heading, as the IMU heading is CW positive
             double botHeading = -(current.angle - zeroAngle);
-            if (driveY) {
+            if (!driveY && previousDriveY) {
                 zeroAngle = current.angle;
             }
             if (armDpadRight) {
 
-                lifterTicksAsync(-8617);
+                lifterTicksAsync(-4363);
             } else {
                 lifterMotor.setPower(0);
             }
@@ -119,9 +170,16 @@ public class MainTeleOp extends StarterAuto {
             if (driveB && !previousArmB) {
                 fieldCentric = !fieldCentric;
             }
-            if (driveX) {
-                airplane.setPosition(.5);
+            if (!driveX && previousDriveX) {
+                if(airplane.getPosition()!=.5){
+                    airplane.setPosition(.5);
+                }
+                else{
+                    airplane.setPosition(0);
+                }
+
             }
+
             if (fieldCentric) {
                 rotX = driveXleftStick * Math.cos(botHeading) - driveYleftStick * Math.sin(botHeading);
                 rotY = driveXleftStick * Math.sin(botHeading) + driveYleftStick * Math.cos(botHeading);
@@ -129,13 +187,85 @@ public class MainTeleOp extends StarterAuto {
                 rotX = driveXleftStick;
                 rotY = driveYleftStick;
             }
-            // Moves the arm back and forth
-            if (!(armXleftStick < 0.05 && armXleftStick > -0.05)) {
-                armMove(armXleftStick);
-            } else if (armLeftBumper) {
-                armAsync(ARMROTATE0POSITION);
+            if ((armRightTrigger > 0.05) || (armLeftTrigger > 0.05)) {
+                if (armRightTrigger > 0.05) {
+                    stringAsync(stringPot.getVoltage() - .1);
+                } else {
+                    stringAsync(stringPot.getVoltage() + 0.1);
+                }
             } else {
+                stringMotor.setPower(0);
+            }
+            // Moves the arm back and forth
+            if(armXleftStick>.05){
+                armAsync(armPot.getVoltage()+.05);
+            }
+            else if(armXleftStick<-.05){
+                armAsync(armPot.getVoltage()-.05);
+            }
+            else {
                 armMotor.setPower(0);
+            }
+            if(armRightBumper){
+                packet.put("ARMLEFTBUMPER", currentArmState);
+
+                if(currentArmState == armState.Zeroing ){
+                if(armAsync(ARMROTATE0POSITION)){
+                    currentArmState = armState.Extending;
+                }
+                }
+                if(currentArmState== armState.Extending ){
+                    if(stringAsync(STRINGVOLTTOP)){
+                        currentArmState = armState.Extended;
+                    }
+                }
+                if(currentArmState == armState.Extended){
+                    armFlipper.setPosition(FLIPPEROUT);
+                    if(flipped){
+                        currentArmState = armState.Flipped;
+                    }
+                }
+                if(currentArmState == armState.Flipped){
+                    if(armAsync(ARMEXTENDEDMAXVOLT)){
+                        armFlipper.setPosition(-.92);
+                    }
+                }
+
+            }
+            else if(previousArmRightBumper && !armRightBumper){
+                packet.put("ARMLEFTBUMPER", 0);
+                armMotor.setPower(0);
+                stringMotor.setPower(0);
+                currentArmState = armState.Zeroing;
+            }
+            if(armLeftBumper){
+                if(currentArmState == armState.Zeroing ){
+                    if(armAsync(ARMROTATE0POSITION)){
+                        currentArmState = armState.Extending;
+                    }
+                }
+                if(currentArmState == armState.Extending ){
+                    if(stringAsync(STRINGVOLTTOP)){
+                        currentArmState = armState.Extended;
+                    }
+                }
+                if(currentArmState == armState.Extended){
+                    armFlipper.setPosition(FLIPPEROUT);
+                    if(flipped){
+                        currentArmState = armState.Flipped;
+                    }
+                }
+                if(currentArmState == armState.Flipped){
+                    if(armAsync(ARMROTATEMINVOLT)){
+                        armFlipper.setPosition(-.92);
+                    }
+                }
+            }
+            else if(previousArmLeftBumper && !armLeftBumper){
+                packet.put("ARMLEFTBUMPER", 0);
+                armMotor.setPower(0);
+                stringMotor.setPower(0);
+                currentArmState = armState.Zeroing;
             }
             // if(!(armXleftStick<0.05 && armXleftStick>-0.05)){
             // if(armXleftStick>0.05){
@@ -147,31 +277,53 @@ public class MainTeleOp extends StarterAuto {
             // }
 
             // Moves the strings out and in
-            if ((armRightTrigger > 0.05) || (armLeftTrigger > 0.05)) {
-                if (armRightTrigger > 0.05) {
-                    stringAsync(((stringPot.getVoltage() < .2) ? (stringPot.getVoltage() + 3.312)
-                            : (stringPot.getVoltage())) - .1);
-                } else {
-                    stringAsync(((stringPot.getVoltage() < .2) ? (stringPot.getVoltage() + 3.312)
-                            : (stringPot.getVoltage())) + 0.1);
-                }
-            } else {
-                stringMotor.setPower(0);
-            }
+
             packet.put("ArmPot", armPot.getVoltage());
             packet.put("StringPot",
-                    ((stringPot.getVoltage() < .2) ? (stringPot.getVoltage() + 3.312) : (stringPot.getVoltage())));
+                    stringPot.getVoltage());
             // Moves the servo
             if ((armDpadUp || previousDpadUp || armDpadDown || previousDpadDown)) {
                 lift(armDpadUp, previousDpadUp, armDpadDown, previousDpadDown);
             }
-            if (armDpadLeft) {// Goes back to center
-                armAsync(ARMROTATE0POSITION);
-                stringAsync(STRINGVOLTTOP);
+            if (armDpadLeft) {
+                // Goes back to center
+                packet.put("ARMCENTERER", currentReturningArmState);
+                if(currentReturningArmState == returningArmState.Zeroing){
+                    if(armFlipper.getPosition()<.5){
+                        armFlipper.setPosition(FLIPPERPARTIAL);
+                    }
+                    if(armAsync(ARMROTATE0POSITION)){
+                        currentReturningArmState = returningArmState.Extending;
+                    }
+                }
+                else if(currentReturningArmState == returningArmState.Extending){
+                    if(stringAsync(STRINGVOLTTOP)){
+                        currentReturningArmState = returningArmState.Flipping;
+                    }
+                }
+                else if(currentReturningArmState == returningArmState.Flipping){
+                    armFlipper.setPosition(FLIPPERDOWN);
+                    finger.setPosition(0);
+                    currentReturningArmState = returningArmState.Flipped;
+
+                }
+                else if(currentReturningArmState == returningArmState.Flipped){
+                    if(flipped){
+                        currentReturningArmState = returningArmState.Downing;
+                    }
+                }
+                else if(currentReturningArmState == returningArmState.Downing){
+                    stringAsync(stringPot.getVoltage() + 0.06);
+
+
+                }
+
+
             }
             if (!armDpadLeft && previousArmDpadLeft) {
                 armMotor.setPower(0);
                 stringMotor.setPower(0);
+                currentReturningArmState = returningArmState.Zeroing;
 
             }
             if (armX && previousArmX) {
@@ -182,23 +334,30 @@ public class MainTeleOp extends StarterAuto {
                 intakeMotor.setPower(0);
             }
             if (armA && !previousArmA) {
-                if (currentPosition == 2) {
-                    setFinger(servoPositions[1]);
-                    currentPosition = 1;
-                    increasingPosition = "decreasing";
-                } else if (currentPosition == 1) {
-                    if (increasingPosition.equals("increasing")) {
-                        setFinger(servoPositions[2]);
-                        currentPosition = 2;
+                if (Math.abs(stringPot.getVoltage()-STRINGVOLTDOWN)<.4) {
+                    if (finger.getPosition() == FINGERCOVER) {
+                        finger.setPosition(FINGERRIGHT);
                     } else {
-                        setFinger(servoPositions[0]);
-                        currentPosition = 0;
+                        finger.setPosition(FINGERCOVER);
                     }
-                } else {
-                    setFinger(servoPositions[1]);
-                    currentPosition = 1;
-                    increasingPosition = "increasing";
                 }
+                else if(armPot.getVoltage()<ARMROTATE0POSITION){
+                        if(finger.getPosition()==FINGERCOVER){
+                            finger.setPosition(FINGERRIGHT);
+                        }
+                        else{
+                            finger.setPosition(FINGERCOVER);
+                        }
+                }
+                else{
+                    if(finger.getPosition()==FINGERCOVER){
+                        finger.setPosition(FINGERLEFT);
+                    }
+                    else{
+                        finger.setPosition(FINGERCOVER);
+                    }
+                }
+
             }
             if (!armY && previousArmY) {
                 if (armFlipper.getPosition() == .29) {
@@ -214,6 +373,15 @@ public class MainTeleOp extends StarterAuto {
                     setFlipperPosition(.29);
                     currentFlipperPosition = .29;
                 }
+            }
+
+            if(Math.abs(stringPot.getVoltage()-STRINGVOLTDOWN)<.1){
+                downGreen.setState(true);
+                downRed.setState(false);
+            }
+            else{
+                downRed.setState(true);
+                downGreen.setState(false);
             }
 
             packet.put("rotatex", rotX);

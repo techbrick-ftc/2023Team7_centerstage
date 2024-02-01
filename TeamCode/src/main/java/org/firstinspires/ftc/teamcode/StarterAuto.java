@@ -9,9 +9,13 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -98,22 +102,26 @@ public class StarterAuto extends LinearOpMode {
     private VisionPortal visionPortal;
     final double FLIPPERPARTIAL = .3;
 
-    final double FLIPPEROUT = -.92;
+
+
+
+    final double FLIPPEROUT = .2;
 
     final double FLIPPERDOWN = 1;
     final double FINGERCOVER = .5;
 
-    final double FINGERRELEASE = 1;
-    final double ARMROTATEMAXVOLT = 1.24;// actually 1.102;
-    final double ARMEXTENDEDMAXVOLT = 1.24;
-    final double ARMROTATE0POSITION = .772;
-    final double ARMROTATEMINVOLT = .34;// actually .084; then why not put .084? - Aidan
+    final double FINGERLEFT = 1;
+    final double FINGERRIGHT = 0;
+    final double ARMROTATEMAXVOLT = 2.145;
+    final double ARMEXTENDEDMAXVOLT = 2.04;
+    final double ARMROTATE0POSITION = 1.482;
+    final double ARMROTATEMINVOLT = .95 ;
 
-    final double VOLTSSTRINGUP = 3.302;
+    final double VOLTSSTRINGUP = 2.53;
 
-    final double STRINGVOLTDOWN = 3.28;
-    final double STRINGVOLTTOP = .26;// at the top
-    final double VOLTSSTRINGDOWN = .241;// fiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiind!
+    final double STRINGVOLTDOWN = 2.53;
+    final double STRINGVOLTTOP = .24;// at the top
+    final double VOLTSSTRINGDOWN = .24;// fiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiind!
     double lastTime;
     double oldTimeDecel;
     double currentTime;
@@ -156,6 +164,7 @@ public class StarterAuto extends LinearOpMode {
     public DcMotor lifterMotor;
     // Ex Hub port 1
     public DcMotor intakeMotor;
+    public VoltageSensor voltageSensor;
     // Control Hub Port 0
     public Servo armFlipper;
     double flipperPosition = 0;
@@ -170,6 +179,8 @@ public class StarterAuto extends LinearOpMode {
     public ColorSensor colorBR;
     public ColorSensor colorBL;
     public TouchSensor armuptouch;
+    public DigitalChannel downGreen;
+    public DigitalChannel downRed;
 
     public AnalogInput armPot; // analog 0 control hub
 
@@ -435,6 +446,7 @@ public class StarterAuto extends LinearOpMode {
     }
 
     protected void initialize(Pose inputPose) {
+        voltageSensor = hardwareMap.voltageSensor.iterator().next();
         frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft"); // C3
         backLeft = hardwareMap.get(DcMotorEx.class, "backLeft"); // C0
         frontRight = hardwareMap.get(DcMotorEx.class, "frontRight"); // C2
@@ -443,8 +455,10 @@ public class StarterAuto extends LinearOpMode {
         intakeMotor = hardwareMap.get(DcMotor.class, "intake"); // E1
         stringMotor = hardwareMap.get(DcMotor.class, "stringMotor"); // E3
         armMotor = hardwareMap.get(DcMotor.class, "arm"); // E2
-        armPot = hardwareMap.get(AnalogInput.class, "shoulderPot"); // C0
-        stringPot = hardwareMap.get(AnalogInput.class, "stringPot"); // C3
+        armPot = hardwareMap.get(AnalogInput.class, "armPot"); // C0
+        stringPot = hardwareMap.get(AnalogInput.class, "stringPot2"); // C3
+        downGreen = hardwareMap.get(DigitalChannel.class, "downgreen");
+        downRed = hardwareMap.get(DigitalChannel.class, "downred");
 
         deadLeft = hardwareMap.get(DcMotorEx.class, "backRight"); // C0
         deadRight = hardwareMap.get(DcMotorEx.class, "frontRight"); // C2
@@ -525,17 +539,21 @@ public class StarterAuto extends LinearOpMode {
         double armVolt = (armPot.getVoltage() < .3) ? (armPot.getVoltage() + 3.312) : (armPot.getVoltage());
         double armDif = targVolt - armVolt;
         TelemetryPacket packet = new TelemetryPacket();
+        if(targVolt>ARMEXTENDEDMAXVOLT||targVolt<ARMROTATEMINVOLT){
+            armMotor.setPower(0);
+            return true;
 
-        double multi = .7;
+        }
+        double multi = 1;
         packet.put("current", armVolt);
         packet.put("armDif", armDif);
         packet.put("targVolt", targVolt);
-        if (Math.abs(armDif) < .03) {
+        if (Math.abs(armDif) < .025) {
             armMotor.setPower(0);
             return true;
         }
-        if (Math.abs(armDif) < .8) {
-            multi = multi * .5;
+        if (Math.abs(armDif) < .4) {
+            multi = multi * .6;
         }
         if (armDif < 0) {
             armMotor.setPower(multi);
@@ -548,13 +566,12 @@ public class StarterAuto extends LinearOpMode {
         return false;
     }
 
-    protected boolean stringAsync(double targVolt) {
+    protected boolean   stringAsync(double targVolt) {
         double armVolt = (armPot.getVoltage() < .3) ? (armPot.getVoltage() + armPot.getMaxVoltage())
                 : (armPot.getVoltage());// algorihtm to convert
         // if arm dflippedown and outside 12 o clock dont allow move
-        double stringVolt = ((stringPot.getVoltage() < .2) ? (stringPot.getVoltage() + stringPot.getMaxVoltage())
-                : (stringPot.getVoltage()));
-        double armDif = targVolt - stringVolt;
+        double stringVolt = stringPot.getVoltage();
+        double armDif = -targVolt + stringVolt;
         TelemetryPacket packet = new TelemetryPacket();
         double multi = 1;
         packet.put("stringDif", armDif);
@@ -562,7 +579,8 @@ public class StarterAuto extends LinearOpMode {
         packet.put("targVoltString", targVolt);
         if ((armFlipper.getPosition() == 1) && Math.abs(armVolt - ARMROTATE0POSITION) > .1) {
             stringMotor.setPower(0);
-            packet.put("Error", "DrDavething");
+            packet.put("armDif", "bro what3");
+
             dashboard.sendTelemetryPacket(packet);
             return (true);
         }
@@ -575,27 +593,31 @@ public class StarterAuto extends LinearOpMode {
         // dashboard.sendTelemetryPacket(packet);
         // return true;
         // }
-        if ((targVolt < VOLTSSTRINGDOWN) || (targVolt > VOLTSSTRINGUP)) { // Just incase
+        if ((targVolt < VOLTSSTRINGDOWN&& armDif>0) || (targVolt > VOLTSSTRINGUP) && armDif<0) { // Just incase
             stringMotor.setPower(0);
             packet.put("armDif", "bro what");
             dashboard.sendTelemetryPacket(packet);
             return true;
         }
-        if (Math.abs(armDif) < .025) {
+        if (Math.abs(armDif) < .05) {
             stringMotor.setPower(0);
+            packet.put("armDif", "bro what2");
             dashboard.sendTelemetryPacket(packet);
             return true;
         }
-        if (Math.abs(armDif) < .15) {
-            multi = multi * .8;
+        if (Math.abs(armDif) < .2) {
+            multi = multi * .65;
         }
         if (armDif > 0) {
+
             stringMotor.setPower(multi);
         } else {
             multi = -multi;
             stringMotor.setPower(multi);
         }
         packet.put("multi", multi);
+        packet.put("armDif", "multi");
+
         dashboard.sendTelemetryPacket(packet);
         return false;
     }
@@ -644,7 +666,7 @@ public class StarterAuto extends LinearOpMode {
     }
 
     protected void returnArm() {
-        finger.setPosition(1);
+        finger.setPosition(0);
 
         setFlipperPosition(FLIPPERPARTIAL);
         sleep(350);
@@ -717,15 +739,15 @@ public class StarterAuto extends LinearOpMode {
                 }
                 armFlipper.setPosition(FLIPPERPARTIAL);
                 sleep(100);
-                while (!(armAsync(.38)) && opModeIsActive()) {
+                while (!(armAsync(.45)) && opModeIsActive()) {
                     armFlipper.setPosition(FLIPPERPARTIAL);
 
                 }
-                while (!(stringAsync(2.924)) && opModeIsActive()) {
+                while (!(stringAsync(STRINGVOLTTOP)) && opModeIsActive()) {
                 }
                 armFlipper.setPosition(FLIPPEROUT);
                 sleep(560);
-                finger.setPosition(FINGERRELEASE);
+                finger.setPosition(FINGERLEFT);
                 sleep(300);
 
             } else if (location == Location.LEFT) {
@@ -750,7 +772,7 @@ public class StarterAuto extends LinearOpMode {
                 }
                 armFlipper.setPosition(FLIPPEROUT);
                 sleep(560);
-                finger.setPosition(FINGERRELEASE);
+                finger.setPosition(FINGERLEFT);
                 sleep(300);
 
             } else {
@@ -775,7 +797,7 @@ public class StarterAuto extends LinearOpMode {
                 }
                 armFlipper.setPosition(FLIPPEROUT);
                 sleep(560);
-                finger.setPosition(FINGERRELEASE);
+                finger.setPosition(FINGERLEFT);
                 sleep(300);
 
             }
@@ -805,7 +827,7 @@ public class StarterAuto extends LinearOpMode {
                 }
                 armFlipper.setPosition(FLIPPEROUT);
                 sleep(560);
-                finger.setPosition(FINGERRELEASE);
+                finger.setPosition(FINGERLEFT);
                 sleep(300);
 
             } else if (location == Location.RIGHT) {
@@ -827,7 +849,7 @@ public class StarterAuto extends LinearOpMode {
                 }
                 armFlipper.setPosition(FLIPPEROUT);
                 sleep(560);
-                finger.setPosition(FINGERRELEASE);
+                finger.setPosition(FINGERLEFT);
                 sleep(300);
 
             } else {
@@ -849,7 +871,7 @@ public class StarterAuto extends LinearOpMode {
                 }
                 armFlipper.setPosition(FLIPPEROUT);
                 sleep(560);
-                finger.setPosition(FINGERRELEASE);
+                finger.setPosition(FINGERLEFT);
                 sleep(300);
 
             }

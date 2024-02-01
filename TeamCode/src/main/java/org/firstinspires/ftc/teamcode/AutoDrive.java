@@ -35,21 +35,26 @@ public class AutoDrive extends StarterAuto {
         // FindPixel colorDetector = new FindPixel(60, 15, true, hardwareMap);
         while (opModeInInit()) {
             packet.put("string",
-                    ((stringPot.getVoltage() < .2) ? (stringPot.getVoltage() + 3.312) : (stringPot.getVoltage())));
+                    ((stringPot.getVoltage() < .2) ? (stringPot.getVoltage() + stringPot.getMaxVoltage()) : (stringPot.getVoltage())));
             packet.put("stringreal", (stringPot.getVoltage()));
             dashboard.sendTelemetryPacket(packet);
         }
         waitForStart();
         // getReadyToPlace();
-        // pixelPlaceAuto(Location.CENTER,true);
-        finger.setPosition(1);
+
         // intakeMotor.setPower(.5);
         // finger.setPosition(0.5); maks it hold stuff
         // armFlipper.setPosition(.3);
 
         while (opModeIsActive()) {
             ;
-            // returnArm();
+            finger.setPosition(1);
+            sleep(3000);
+            finger.setPosition(.5);
+            sleep(3000);
+            finger.setPosition(0);
+            sleep(3000);
+            dashboard.sendTelemetryPacket(packet);
             // armFlipper.setPosition(.3);
 
             // armMotor.setPower(.4);
